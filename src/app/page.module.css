@@ -63,9 +63,11 @@
 
 .systemStatus {
   font-size: 0.7rem;
-  color: #38a169;
   font-weight: 600;
 }
+
+.connected { color: #38a169; }
+.disconnected { color: #e53e3e; }
 
 .systemContent {
   display: flex;
@@ -89,36 +91,13 @@
   min-width: 60px;
 }
 
-.flowArrow {
-  color: #3182ce;
-  font-size: 1.5rem;
-  font-weight: 700;
-}
+.flowArrow { color: #3182ce; font-size: 1.5rem; font-weight: 700; }
+.flowLabel { font-size: 0.65rem; font-weight: 700; color: #a0aec0; text-transform: uppercase; }
 
-.flowLabel {
-  font-size: 0.65rem;
-  font-weight: 700;
-  color: #a0aec0;
-  text-transform: uppercase;
-}
-
-.sectionHeader {
-  margin-bottom: 1rem;
-}
-
-.sectionHeader h2 {
-  font-size: 0.9375rem;
-  font-weight: 700;
-}
+.sectionHeader h2 { font-size: 0.9375rem; font-weight: 700; }
 
 /* Status Badges */
-.statusBadge {
-  padding: 0.15rem 0.5rem;
-  border-radius: 4px;
-  font-size: 0.65rem;
-  font-weight: 700;
-}
-
+.statusBadge { padding: 0.15rem 0.5rem; border-radius: 4px; font-size: 0.65rem; font-weight: 700; }
 .statusBadge.current { background-color: #ebf8ff; color: #3182ce; }
 .statusBadge.archived { background-color: #f3e8ff; color: #805ad5; }
 .statusBadge.stopped { background-color: #f7fafc; color: #718096; }
@@ -132,71 +111,19 @@
   margin-bottom: 0.75rem;
 }
 
-.slackText {
-  font-size: 0.8125rem;
-  line-height: 1.5;
-  margin-bottom: 0.75rem;
-  color: #1a202c;
-}
-
-.slackMeta {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  font-size: 0.75rem;
-  color: #718096;
-}
-
+.slackText { font-size: 0.8125rem; line-height: 1.5; margin-bottom: 0.75rem; color: #1a202c; }
+.slackMeta { display: flex; justify-content: space-between; align-items: center; font-size: 0.75rem; color: #718096; }
 .slackUser { font-weight: 600; color: #4a5568; }
+.slackLink { font-size: 0.7rem; color: #3182ce; text-decoration: underline; margin-top: 0.5rem; display: inline-block; }
 
-/* Tool Grid & Cards */
-.toolGrid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-  gap: 0.75rem;
-  flex: 1;
-  overflow-y: auto;
-}
+/* Tool Cards */
+.toolGrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 0.75rem; flex: 1; overflow-y: auto; }
+.toolCard { background-color: #f8fafc; padding: 1.25rem 1rem 1rem 1rem; border-radius: 10px; position: relative; display: flex; flex-direction: column; justify-content: space-between; border: 1px solid #edf2f7; overflow: hidden; }
+.toolCard h3 { font-size: 0.8125rem; text-align: center; margin-bottom: 0.5rem; font-weight: 700; }
+.toolCard p { font-size: 0.75rem; text-align: center; color: #718096; }
+.actionButton { padding: 0.45rem; background: white; color: var(--accent-color); text-align: center; border-radius: 6px; font-size: 0.7rem; font-weight: 600; border: 1px solid rgba(49, 130, 206, 0.2); margin-top: 0.75rem; }
 
-.toolCard {
-  background-color: #f8fafc;
-  padding: 1.25rem 1rem 1rem 1rem;
-  border-radius: 10px;
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  border: 1px solid #edf2f7;
-  overflow: hidden;
-}
-
-.infoIconWrapper { position: absolute; top: 0.6rem; left: 0.6rem; }
-.infoIcon { width: 14px; height: 14px; font-size: 0.6rem; border: 1px solid #cbd5e0; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #718096; }
-.tooltip { visibility: hidden; position: absolute; top: 20px; left: 0; width: 220px; background: #2d3748; color: white; padding: 0.75rem; border-radius: 6px; font-size: 0.75rem; z-index: 50; line-height: 1.4; }
-.infoIconWrapper:hover .tooltip { visibility: visible; }
-
-.toolContent h3 { font-size: 0.8125rem; text-align: center; margin-bottom: 1rem; font-weight: 700; }
-.toolDetails p { font-size: 0.7rem; margin-bottom: 0.35rem; }
-.toolDetails span { font-weight: 600; color: #718096; margin-right: 4px; }
-
-.actionButton {
-  padding: 0.45rem;
-  background: white;
-  color: var(--accent-color);
-  text-align: center;
-  border-radius: 6px;
-  font-size: 0.7rem;
-  font-weight: 600;
-  border: 1px solid rgba(49, 130, 206, 0.2);
-}
-
-/* Layout Utilities */
-.listScroll {
-  flex: 1;
-  overflow-y: auto;
-  padding-right: 0.5rem;
-}
-
+/* Content Areas */
 .emptyState {
   flex: 1;
   display: flex;
@@ -206,36 +133,10 @@
   border-radius: 8px;
   color: #a0aec0;
   font-size: 0.75rem;
+  background-color: rgba(255, 255, 255, 0.5);
 }
 
-/* AI Summary */
-.summaryBox {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 1.25rem;
-}
-
-.summarySection h4 {
-  font-size: 0.75rem;
-  color: #3182ce;
-  margin-bottom: 0.5rem;
-  border-bottom: 1px solid #ebf8ff;
-}
-
-.summarySection ul { list-style: none; padding: 0; }
-.summarySection li { font-size: 0.8125rem; margin-bottom: 0.5rem; padding-left: 1rem; position: relative; }
-.summarySection li::before { content: "•"; position: absolute; left: 0; color: #3182ce; }
-
-.summarySection p { font-size: 0.8125rem; color: #4a5568; line-height: 1.6; }
-
-.sourceTag {
-  margin-top: auto;
-  font-size: 0.7rem;
-  color: #a0aec0;
-  text-align: right;
-  font-style: italic;
-}
+.sectionDesc { font-size: 0.7rem; color: #718096; margin-bottom: 0.75rem; }
 
 .filterTabs { display: flex; gap: 0.4rem; }
 .filterTabs button { padding: 0.2rem 0.5rem; border-radius: 4px; font-size: 0.65rem; border: none; background: #f1f5f9; cursor: pointer; }
