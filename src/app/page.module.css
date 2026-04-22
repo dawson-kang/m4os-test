@@ -1,184 +1,112 @@
-.container {
-  max-width: 1200px;
-  margin: 0 auto;
+.dashboardContainer {
+  height: calc(100vh - 64px); /* Subtract header height */
+  overflow: hidden;
+  padding: 1.5rem;
 }
 
-.hero {
-  margin-bottom: 3rem;
-}
-
-.primaryTools {
+.quadrantGrid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1fr 1fr;
   gap: 1.5rem;
-  margin-bottom: 4rem;
+  height: 100%;
+}
+
+.quadrant {
+  background-color: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--border-color);
+  overflow: hidden;
+}
+
+.sectionHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.sectionHeader h2 {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+/* Section 1: Tool Grid */
+.toolGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 0.75rem;
+  overflow-y: auto;
 }
 
 .toolCard {
-  background-color: white;
-  padding: 1.5rem;
-  border-radius: var(--radius);
-  border: 1px solid var(--border-color);
-  box-shadow: var(--shadow);
+  background-color: var(--bg-color);
+  padding: 1rem;
+  border-radius: 10px;
   position: relative;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  min-height: 240px;
+  min-height: 160px;
 }
 
-.infoIconWrapper {
-  position: absolute;
-  top: 1rem;
-  left: 1rem;
-  cursor: help;
-}
+.infoIconWrapper { position: absolute; top: 0.5rem; left: 0.5rem; }
+.infoIcon { width: 16px; height: 16px; font-size: 0.625rem; border: 1px solid #a0aec0; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #718096; }
+.tooltip { visibility: hidden; position: absolute; top: 20px; left: 0; width: 200px; background: #2d3748; color: white; padding: 0.75rem; border-radius: 6px; font-size: 0.75rem; z-index: 50; }
+.infoIconWrapper:hover .tooltip { visibility: visible; }
 
-.infoIcon {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 20px;
-  height: 20px;
-  border: 1px solid var(--text-secondary);
-  border-radius: 50%;
-  font-size: 0.75rem;
-  color: var(--text-secondary);
-  font-weight: bold;
-}
-
-.tooltip {
-  visibility: hidden;
-  position: absolute;
-  top: 25px;
-  left: 0;
-  width: 250px;
-  background-color: #2d3748;
-  color: white;
-  padding: 1rem;
-  border-radius: 8px;
-  font-size: 0.8125rem;
-  line-height: 1.4;
-  z-index: 20;
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-  white-space: pre-wrap;
-}
-
-.infoIconWrapper:hover .tooltip {
-  visibility: visible;
-}
-
-.toolContent h3 {
-  font-size: 1.25rem;
-  font-weight: 700;
-  margin-bottom: 1.5rem;
-  text-align: center;
-}
-
-.toolDetails p {
-  font-size: 0.875rem;
-  margin-bottom: 0.5rem;
-  color: var(--text-primary);
-}
-
-.toolDetails span {
-  font-weight: 600;
-  color: var(--text-secondary);
-  width: 50px;
-  display: inline-block;
-}
+.toolContent h3 { font-size: 0.9375rem; text-align: center; margin-bottom: 0.75rem; }
+.toolDetails p { font-size: 0.75rem; margin-bottom: 0.25rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.toolDetails span { font-weight: 600; color: #718096; margin-right: 4px; }
 
 .actionButton {
-  display: block;
-  width: 100%;
-  padding: 0.75rem;
-  background-color: rgba(49, 130, 206, 0.1);
+  padding: 0.4rem;
+  background: rgba(49, 130, 206, 0.1);
   color: var(--accent-color);
   text-align: center;
-  border-radius: var(--radius);
+  border-radius: 6px;
+  font-size: 0.75rem;
   font-weight: 600;
-  transition: background-color 0.2s;
-  margin-top: 1.5rem;
+  margin-top: 0.75rem;
 }
 
-.actionButton:hover {
-  background-color: rgba(49, 130, 206, 0.2);
-}
+/* Section 2: Archive */
+.filterTabs { display: flex; gap: 0.5rem; }
+.filterTabs button { padding: 0.25rem 0.6rem; border-radius: 4px; font-size: 0.75rem; border: none; background: #edf2f7; cursor: pointer; }
+.activeTab { background: var(--accent-color) !important; color: white; }
 
-.pillars {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 1.5rem;
-  margin-bottom: 4rem;
-}
+.searchBox { margin-bottom: 1rem; }
+.searchInput { width: 100%; padding: 0.5rem 0.75rem; border: 1px solid var(--border-color); border-radius: 6px; font-size: 0.8125rem; }
 
-.pillarCard {
-  background-color: white;
-  padding: 1.5rem;
-  border-radius: var(--radius);
-  border: 1px solid var(--border-color);
-  transition: transform 0.2s;
-}
+.archiveList { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 0.5rem; }
+.archiveItem { padding: 0.75rem; background: #f8fafc; border-radius: 8px; border-left: 4px solid #cbd5e0; }
+.archiveMain { display: flex; justify-content: space-between; margin-bottom: 0.25rem; }
+.archiveTitle { font-size: 0.875rem; font-weight: 600; }
+.archiveSource { font-size: 0.7rem; color: #718096; }
+.archiveMeta { display: flex; justify-content: space-between; font-size: 0.75rem; color: #a0aec0; }
+.archiveTag { background: #e2e8f0; padding: 0.1rem 0.4rem; border-radius: 4px; color: #4a5568; }
 
-.pillarCard:hover {
-  transform: translateY(-4px);
-  border-color: var(--accent-color);
-}
+/* Section 3: Slack Feed */
+.sectionDesc { font-size: 0.75rem; color: #718096; margin-bottom: 1rem; }
+.slackFeed { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 0.75rem; }
+.emptyState { padding: 1.5rem; text-align: center; color: #a0aec0; font-size: 0.8125rem; border: 1px dashed #e2e8f0; border-radius: 8px; }
+.feedItem { padding: 0.75rem; background: #f0f7ff; border-radius: 8px; border-left: 4px solid var(--accent-color); }
+.feedContent { font-size: 0.875rem; margin-bottom: 0.5rem; line-height: 1.4; }
+.feedMeta { font-size: 0.7rem; color: #718096; display: flex; gap: 0.75rem; align-items: center; }
+.statusBadge { background: #3182ce; color: white; padding: 0.1rem 0.4rem; border-radius: 4px; font-size: 0.625rem; }
 
-.pillarIcon {
-  font-size: 2rem;
-  margin-bottom: 0.75rem;
-}
-
-.pillarCard h3 { font-size: 1.125rem; margin-bottom: 0.5rem; }
-.pillarCard p { color: var(--text-secondary); font-size: 0.8125rem; }
-
-.grid {
-  display: grid;
-  grid-template-columns: 2fr 1fr;
-  gap: 1.5rem;
-}
-
-.updates, .quickLinks {
-  background-color: white;
-  padding: 1.5rem;
-  border-radius: var(--radius);
-  border: 1px solid var(--border-color);
-}
-
-.updateList { list-style: none; }
-.updateItem {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  padding: 0.75rem 0;
-  border-bottom: 1px solid var(--bg-color);
-}
-
-.updateDate { font-size: 0.75rem; color: var(--text-secondary); min-width: 80px; }
-.updateTitle { flex: 1; font-size: 0.875rem; }
-
-.badge {
-  font-size: 0.625rem;
-  font-weight: 700;
-  padding: 0.2rem 0.5rem;
-  border-radius: 4px;
-  text-transform: uppercase;
-}
-
-.badge.update { background-color: #ebf8ff; color: #3182ce; }
-.badge.experiment { background-color: #f0fff4; color: #38a169; }
-.badge.notice { background-color: #fffaf0; color: #dd6b20; }
-
-.linkGrid { display: grid; gap: 0.75rem; }
-.quickLink {
-  padding: 0.75rem;
-  background-color: var(--bg-color);
-  border-radius: var(--radius);
-  font-size: 0.875rem;
-  font-weight: 500;
-}
+/* Section 4: AI Panel */
+.aiPanel { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 1rem; background: #fdfdfd; padding: 0.5rem; }
+.aiSection { padding: 0.75rem; background: white; border: 1px solid #edf2f7; border-radius: 8px; }
+.aiSection h4 { font-size: 0.8125rem; margin-bottom: 0.5rem; color: var(--accent-color); border-bottom: 1px solid #edf2f7; padding-bottom: 0.25rem; }
+.aiSection p { font-size: 0.8125rem; line-height: 1.5; color: #4a5568; }
 
 @media (max-width: 1024px) {
-  .primaryTools, .pillars, .grid { grid-template-columns: 1fr; }
+  .dashboardContainer { height: auto; overflow: visible; }
+  .quadrantGrid { grid-template-columns: 1fr; grid-template-rows: auto; }
 }

@@ -1,27 +1,41 @@
 import Link from 'next/link';
 import styles from './Sidebar.module.css';
+
+const roles = [
+  { label: 'M4 (재고/발주 직무)', ready: true },
+];
+
 export default function Sidebar() {
   return (
     <aside className={styles.sidebar}>
       <div className={styles.logo}>
         <h1>M4 OS Hub</h1>
       </div>
-      <nav className={styles.nav}>
-        <ul className={styles.navList}>
-          <li><Link href="/">대시보드</Link></li>
-          <li><Link href="/current">현재 운영</Link></li>
-          <li><Link href="/future">미래 과제</Link></li>
-          <li><Link href="/archive">과거 아카이브</Link></li>
-        </ul>
-      </nav>
-      <div className={styles.roles}>
-        <h3>역할별 확장</h3>
-        <ul>
-          <li>M1 <span className={styles.badge}>준비 중</span></li>
-          <li>M2 <span className={styles.badge}>준비 중</span></li>
-          <li>M3 <span className={styles.badge}>준비 중</span></li>
-          <li className={styles.active}>M4 재고/운영</li>
-        </ul>
+      
+      <div className={styles.section}>
+        <h3 className={styles.sectionTitle}>M4 (재고/발주 직무)</h3>
+        <nav className={styles.nav}>
+          <ul className={styles.navList}>
+            <li>
+              <Link href="/" className={styles.navLink}>대시보드</Link>
+            </li>
+          </ul>
+        </nav>
+      </div>
+
+      <div className={styles.section}>
+        <h3 className={styles.sectionTitle}>개인 저장 Slack</h3>
+        <nav className={styles.nav}>
+          <ul className={styles.navList}>
+            <li>
+              <Link href="/personal" className={styles.navLink}>개인 저장 내역</Link>
+            </li>
+          </ul>
+        </nav>
+      </div>
+
+      <div className={styles.footer}>
+        <Link href="/login" className={styles.navLink}>로그아웃</Link>
       </div>
     </aside>
   );
