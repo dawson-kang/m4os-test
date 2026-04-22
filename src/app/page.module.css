@@ -1,5 +1,5 @@
 .dashboardContainer {
-  height: calc(100vh - 64px); /* Full screen minus header */
+  height: calc(100vh - 64px);
   overflow: hidden;
   padding: 1rem 1.5rem 1.5rem 1.5rem;
   background-color: var(--bg-color);
@@ -24,6 +24,55 @@
   overflow: hidden;
 }
 
+/* System Pipeline Styling */
+.systemGroup {
+  grid-column: 1 / span 2;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+}
+
+.systemLabel {
+  font-size: 0.7rem;
+  font-weight: 800;
+  color: var(--accent-color);
+  background-color: #ebf8ff;
+  padding: 0.2rem 0.6rem;
+  border-radius: 4px;
+  width: fit-content;
+  margin-bottom: 0.5rem;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.systemContent {
+  display: flex;
+  flex: 1;
+  gap: 0.5rem;
+  align-items: stretch;
+}
+
+.connectedQuadrant {
+  background-color: #f0f7ff !important;
+  border: 1px solid #dbeafe !important;
+  flex: 1;
+}
+
+.connectedQuadrant h2 {
+  color: #2c5282 !important;
+}
+
+.flowArrow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #3182ce;
+  font-size: 1.25rem;
+  font-weight: 300;
+  padding: 0 0.25rem;
+}
+
 .sectionHeader {
   display: flex;
   justify-content: space-between;
@@ -33,7 +82,7 @@
 }
 
 .sectionHeader h2 {
-  font-size: 1rem;
+  font-size: 0.9375rem;
   font-weight: 700;
   color: var(--text-primary);
 }
@@ -49,7 +98,7 @@
 
 .toolCard {
   background-color: #f8fafc;
-  padding: 1rem;
+  padding: 0.875rem;
   border-radius: 10px;
   position: relative;
   display: flex;
@@ -59,29 +108,26 @@
 }
 
 .infoIconWrapper { position: absolute; top: 0.5rem; left: 0.5rem; z-index: 10; }
-.infoIcon { width: 16px; height: 16px; font-size: 0.625rem; border: 1px solid #cbd5e0; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #718096; cursor: help; }
+.infoIcon { width: 14px; height: 14px; font-size: 0.6rem; border: 1px solid #cbd5e0; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #718096; }
 .tooltip { visibility: hidden; position: absolute; top: 20px; left: 0; width: 220px; background: #2d3748; color: white; padding: 0.75rem; border-radius: 6px; font-size: 0.75rem; z-index: 50; line-height: 1.4; }
 .infoIconWrapper:hover .tooltip { visibility: visible; }
 
-.toolContent h3 { font-size: 0.875rem; text-align: center; margin-bottom: 1rem; font-weight: 700; }
-.toolDetails p { font-size: 0.75rem; margin-bottom: 0.4rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.toolDetails span { font-weight: 600; color: #718096; margin-right: 6px; font-size: 0.7rem; }
+.toolContent h3 { font-size: 0.8125rem; text-align: center; margin-bottom: 0.75rem; font-weight: 700; }
+.toolDetails p { font-size: 0.7rem; margin-bottom: 0.25rem; }
+.toolDetails span { font-weight: 600; color: #718096; margin-right: 4px; }
 
 .actionButton {
-  padding: 0.5rem;
+  padding: 0.4rem;
   background: white;
   color: var(--accent-color);
   text-align: center;
   border-radius: 6px;
-  font-size: 0.75rem;
+  font-size: 0.7rem;
   font-weight: 600;
   border: 1px solid rgba(49, 130, 206, 0.2);
-  transition: all 0.2s;
 }
 
-.actionButton:hover { background: #ebf8ff; }
-
-/* Empty State Styling */
+/* Content Areas */
 .archiveContent, .slackContent, .aiContent {
   flex: 1;
   display: flex;
@@ -94,29 +140,31 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 1px dashed #e2e8f0;
+  border: 1px dashed rgba(203, 213, 224, 0.5);
   border-radius: 8px;
-  background-color: #fcfcfc;
 }
 
 .emptyState p {
-  font-size: 0.8125rem;
+  font-size: 0.75rem;
   color: #a0aec0;
 }
 
 .sectionDesc {
-  font-size: 0.75rem;
+  font-size: 0.7rem;
   color: #718096;
-  margin-bottom: 1rem;
+  margin-bottom: 0.75rem;
   flex-shrink: 0;
 }
 
 /* Tabs */
 .filterTabs { display: flex; gap: 0.4rem; }
-.filterTabs button { padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.7rem; border: none; background: #f1f5f9; cursor: pointer; color: #64748b; }
+.filterTabs button { padding: 0.2rem 0.4rem; border-radius: 4px; font-size: 0.65rem; border: none; background: #f1f5f9; cursor: pointer; }
 .activeTab { background: var(--accent-color) !important; color: white !important; }
 
 @media (max-width: 1024px) {
   .dashboardContainer { height: auto; overflow: visible; }
   .quadrantGrid { grid-template-columns: 1fr; grid-template-rows: auto; }
+  .systemGroup { grid-column: auto; }
+  .systemContent { flex-direction: column; }
+  .flowArrow { transform: rotate(90deg); padding: 0.5rem 0; }
 }

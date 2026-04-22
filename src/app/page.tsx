@@ -89,30 +89,38 @@ export default function DashboardPage() {
           </div>
         </section>
 
-        {/* Section 3: 현재 기준 (실시간 수집) */}
-        <section className={`${styles.quadrant} ${styles.section3}`}>
-          <div className={styles.sectionHeader}>
-            <h2>현재 기준 (실시간 수집)</h2>
-          </div>
-          <div className={styles.slackContent}>
-            <p className={styles.sectionDesc}>Dtest 이모지가 달린 Slack 메시지가 자동으로 수집됩니다</p>
-            <div className={styles.emptyState}>
-              <p>Slack 연동 시 자동으로 기준이 수집됩니다</p>
-            </div>
-          </div>
-        </section>
+        {/* 자동 기준 정리 시스템: Section 3 & 4 연결 */}
+        <div className={styles.systemGroup}>
+          <div className={styles.systemLabel}>자동 기준 정리 시스템</div>
+          <div className={styles.systemContent}>
+            {/* Section 3: 현재 기준 (실시간 수집) */}
+            <section className={`${styles.quadrant} ${styles.connectedQuadrant} ${styles.section3}`}>
+              <div className={styles.sectionHeader}>
+                <h2>현재 기준 (실시간 수집)</h2>
+              </div>
+              <div className={styles.slackContent}>
+                <p className={styles.sectionDesc}>Dtest 이모지가 달린 Slack 메시지가 자동으로 수집됩니다</p>
+                <div className={styles.emptyState}>
+                  <p>Slack 연동 시 자동으로 기준이 수집됩니다</p>
+                </div>
+              </div>
+            </section>
 
-        {/* Section 4: AI 자동 요약 */}
-        <section className={`${styles.quadrant} ${styles.section4}`}>
-          <div className={styles.sectionHeader}>
-            <h2>AI 자동 요약</h2>
+            <div className={styles.flowArrow}>→</div>
+
+            {/* Section 4: AI 자동 요약 */}
+            <section className={`${styles.quadrant} ${styles.connectedQuadrant} ${styles.section4}`}>
+              <div className={styles.sectionHeader}>
+                <h2>AI 자동 요약</h2>
+              </div>
+              <div className={styles.aiContent}>
+                <div className={styles.emptyState}>
+                  <p>수집된 데이터가 없으면 요약이 생성되지 않습니다</p>
+                </div>
+              </div>
+            </section>
           </div>
-          <div className={styles.aiContent}>
-            <div className={styles.emptyState}>
-              <p>수집된 데이터가 없으면 요약이 생성되지 않습니다</p>
-            </div>
-          </div>
-        </section>
+        </div>
 
       </div>
     </div>
