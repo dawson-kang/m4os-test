@@ -1,2 +1,33 @@
-.header { height: 64px; background: white; border-bottom: 1px solid var(--border-color); padding: 0 2rem; display: flex; align-items: center; justify-content: space-between; }
-.search { padding: 0.5rem; border: 1px solid var(--border-color); border-radius: 4px; width: 300px; }
+.header {
+  height: 64px;
+  background-color: white;
+  border-bottom: 1px solid var(--border-color);
+  padding: 0 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.pageTitle {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.userSection {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.roleTag {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--accent-color);
+  background-color: #ebf8ff;
+  padding: 0.25rem 0.6rem;
+  border-radius: 9999px;
+}

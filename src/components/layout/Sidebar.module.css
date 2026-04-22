@@ -1,7 +1,113 @@
-.sidebar { width: var(--sidebar-width); height: 100vh; position: fixed; background: var(--primary-color); color: white; padding: 1.5rem; display: flex; flex-direction: column; }
-.logo { margin-bottom: 2rem; border-bottom: 1px solid var(--secondary-color); }
-.nav { flex: 1; }
-.navList { display: flex; flex-direction: column; gap: 0.5rem; }
-.roles { margin-top: 2rem; border-top: 1px solid var(--secondary-color); padding-top: 1rem; }
-.badge { font-size: 0.7rem; background: #2d3748; padding: 0.2rem 0.4rem; border-radius: 4px; }
-.active { color: #63b3ed; font-weight: bold; }
+.sidebar {
+  width: var(--sidebar-width);
+  height: 100vh;
+  position: fixed;
+  left: 0;
+  top: 0;
+  background-color: var(--primary-color);
+  color: #e2e8f0;
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  font-family: inherit; /* Use main content font */
+}
+
+.logo {
+  margin-bottom: 2.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.logo h1 {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: white;
+}
+
+.nav {
+  flex: 1;
+}
+
+.navList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  list-style: none;
+}
+
+.navLink {
+  display: block;
+  padding: 0.75rem 1rem;
+  border-radius: var(--radius);
+  color: #a0aec0;
+  font-size: 0.875rem;
+  transition: all 0.2s;
+}
+
+.navLink:hover {
+  background-color: rgba(255, 255, 255, 0.05);
+  color: white;
+}
+
+.profileSection {
+  margin-top: auto;
+  padding-top: 1.5rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.userInfo {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.userAvatar {
+  width: 32px;
+  height: 32px;
+  background-color: var(--accent-color);
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.userDetails {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.userName {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: white;
+}
+
+.userEmail {
+  font-size: 0.75rem;
+  color: #718096;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.logoutBtn {
+  width: 100%;
+  padding: 0.5rem;
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #a0aec0;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.logoutBtn:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: white;
+}

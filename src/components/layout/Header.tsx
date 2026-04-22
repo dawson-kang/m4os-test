@@ -1,9 +1,14 @@
 import styles from './Header.module.css';
+
 export default function Header() {
   return (
     <header className={styles.header}>
-      <input type="text" placeholder="검색..." className={styles.search} />
-      <div className={styles.user}>M4 Manager</div>
+      <div className={styles.titleSection}>
+        <span className={styles.pageTitle}>대시보드</span>
+      </div>
+      <div className={styles.userSection}>
+        <span className={styles.roleTag}>M4 Manager</span>
+      </div>
     </header>
   );
 }

@@ -82,29 +82,9 @@ export default function DashboardPage() {
               >구글시트</button>
             </div>
           </div>
-          <div className={styles.searchBox}>
-            <input type="text" placeholder="검색어를 입력하세요..." className={styles.searchInput} />
-          </div>
-          <div className={styles.archiveList}>
-            <div className={styles.archiveItem}>
-              <div className={styles.archiveMain}>
-                <span className={styles.archiveTitle}>리넨 기준 변경</span>
-                <span className={styles.archiveSource}>Slack</span>
-              </div>
-              <div className={styles.archiveMeta}>
-                <span className={styles.archiveDate}>2026.03</span>
-                <span className={styles.archiveTag}>운영기준</span>
-              </div>
-            </div>
-            <div className={styles.archiveItem}>
-              <div className={styles.archiveMain}>
-                <span className={styles.archiveTitle}>발주 기준 업데이트</span>
-                <span className={styles.archiveSource}>Google Sheet</span>
-              </div>
-              <div className={styles.archiveMeta}>
-                <span className={styles.archiveDate}>2026.02</span>
-                <span className={styles.archiveTag}>발주</span>
-              </div>
+          <div className={styles.archiveContent}>
+            <div className={styles.emptyState}>
+              <p>아직 아카이빙된 데이터가 없습니다</p>
             </div>
           </div>
         </section>
@@ -114,19 +94,10 @@ export default function DashboardPage() {
           <div className={styles.sectionHeader}>
             <h2>현재 기준 (실시간 수집)</h2>
           </div>
-          <p className={styles.sectionDesc}>Dtest 이모지가 달린 Slack 메시지가 자동으로 수집됩니다</p>
-          <div className={styles.slackFeed}>
-            {/* Empty State or Mock Data */}
+          <div className={styles.slackContent}>
+            <p className={styles.sectionDesc}>Dtest 이모지가 달린 Slack 메시지가 자동으로 수집됩니다</p>
             <div className={styles.emptyState}>
               <p>Slack 연동 시 자동으로 기준이 수집됩니다</p>
-            </div>
-            <div className={styles.feedItem}>
-              <p className={styles.feedContent}>오늘부터 어메니티 리필 주기를 3일에서 2일로 단축합니다.</p>
-              <div className={styles.feedMeta}>
-                <span>작성자: 김철수</span>
-                <span>2026.04.22</span>
-                <span className={styles.statusBadge}>New</span>
-              </div>
             </div>
           </div>
         </section>
@@ -136,19 +107,9 @@ export default function DashboardPage() {
           <div className={styles.sectionHeader}>
             <h2>AI 자동 요약</h2>
           </div>
-          <div className={styles.aiPanel}>
-            {/* Sample AI Summary Structure */}
-            <div className={styles.aiSection}>
-              <h4>핵심 요약</h4>
-              <p>최근 어메니티 리필 주기 단축 및 SCM 자동 발주 안정화 작업 진행 중</p>
-            </div>
-            <div className={styles.aiSection}>
-              <h4>재고 기준</h4>
-              <p>- 어메니티 리필: 2일 주기<br/>- 리넨 폐기: 오점 3단계 기준 적용</p>
-            </div>
-            <div className={styles.aiSection}>
-              <h4>변경 사항</h4>
-              <p>기존 구글시트 기반 발주 방식에서 SCM으로 완전 전환 준비 단계</p>
+          <div className={styles.aiContent}>
+            <div className={styles.emptyState}>
+              <p>수집된 데이터가 없으면 요약이 생성되지 않습니다</p>
             </div>
           </div>
         </section>
