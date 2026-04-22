@@ -3,7 +3,9 @@ import styles from './Sidebar.module.css';
 export default function Sidebar() {
   return (
     <aside className={styles.sidebar}>
-      <div className={styles.logo}><h1>M4 Ops Hub</h1></div>
+      <div className={styles.logo}>
+        <h1>M4 OS Hub</h1>
+      </div>
       <nav className={styles.nav}>
         <ul className={styles.navList}>
           <li><Link href="/">대시보드</Link></li>

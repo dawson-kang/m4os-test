@@ -1,6 +1,184 @@
-.container { max-width: 1000px; margin: 0 auto; }
-.hero { margin-bottom: 2rem; }
-.pillars { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 2rem; }
-.card { background: white; padding: 1.5rem; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-.updates { background: white; padding: 1.5rem; border-radius: 8px; }
-.updates ul { display: flex; flex-direction: column; gap: 0.5rem; padding-top: 1rem; }
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.hero {
+  margin-bottom: 3rem;
+}
+
+.primaryTools {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.5rem;
+  margin-bottom: 4rem;
+}
+
+.toolCard {
+  background-color: white;
+  padding: 1.5rem;
+  border-radius: var(--radius);
+  border: 1px solid var(--border-color);
+  box-shadow: var(--shadow);
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 240px;
+}
+
+.infoIconWrapper {
+  position: absolute;
+  top: 1rem;
+  left: 1rem;
+  cursor: help;
+}
+
+.infoIcon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border: 1px solid var(--text-secondary);
+  border-radius: 50%;
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  font-weight: bold;
+}
+
+.tooltip {
+  visibility: hidden;
+  position: absolute;
+  top: 25px;
+  left: 0;
+  width: 250px;
+  background-color: #2d3748;
+  color: white;
+  padding: 1rem;
+  border-radius: 8px;
+  font-size: 0.8125rem;
+  line-height: 1.4;
+  z-index: 20;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  white-space: pre-wrap;
+}
+
+.infoIconWrapper:hover .tooltip {
+  visibility: visible;
+}
+
+.toolContent h3 {
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin-bottom: 1.5rem;
+  text-align: center;
+}
+
+.toolDetails p {
+  font-size: 0.875rem;
+  margin-bottom: 0.5rem;
+  color: var(--text-primary);
+}
+
+.toolDetails span {
+  font-weight: 600;
+  color: var(--text-secondary);
+  width: 50px;
+  display: inline-block;
+}
+
+.actionButton {
+  display: block;
+  width: 100%;
+  padding: 0.75rem;
+  background-color: rgba(49, 130, 206, 0.1);
+  color: var(--accent-color);
+  text-align: center;
+  border-radius: var(--radius);
+  font-weight: 600;
+  transition: background-color 0.2s;
+  margin-top: 1.5rem;
+}
+
+.actionButton:hover {
+  background-color: rgba(49, 130, 206, 0.2);
+}
+
+.pillars {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.5rem;
+  margin-bottom: 4rem;
+}
+
+.pillarCard {
+  background-color: white;
+  padding: 1.5rem;
+  border-radius: var(--radius);
+  border: 1px solid var(--border-color);
+  transition: transform 0.2s;
+}
+
+.pillarCard:hover {
+  transform: translateY(-4px);
+  border-color: var(--accent-color);
+}
+
+.pillarIcon {
+  font-size: 2rem;
+  margin-bottom: 0.75rem;
+}
+
+.pillarCard h3 { font-size: 1.125rem; margin-bottom: 0.5rem; }
+.pillarCard p { color: var(--text-secondary); font-size: 0.8125rem; }
+
+.grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 1.5rem;
+}
+
+.updates, .quickLinks {
+  background-color: white;
+  padding: 1.5rem;
+  border-radius: var(--radius);
+  border: 1px solid var(--border-color);
+}
+
+.updateList { list-style: none; }
+.updateItem {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.75rem 0;
+  border-bottom: 1px solid var(--bg-color);
+}
+
+.updateDate { font-size: 0.75rem; color: var(--text-secondary); min-width: 80px; }
+.updateTitle { flex: 1; font-size: 0.875rem; }
+
+.badge {
+  font-size: 0.625rem;
+  font-weight: 700;
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+  text-transform: uppercase;
+}
+
+.badge.update { background-color: #ebf8ff; color: #3182ce; }
+.badge.experiment { background-color: #f0fff4; color: #38a169; }
+.badge.notice { background-color: #fffaf0; color: #dd6b20; }
+
+.linkGrid { display: grid; gap: 0.75rem; }
+.quickLink {
+  padding: 0.75rem;
+  background-color: var(--bg-color);
+  border-radius: var(--radius);
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+@media (max-width: 1024px) {
+  .primaryTools, .pillars, .grid { grid-template-columns: 1fr; }
+}
