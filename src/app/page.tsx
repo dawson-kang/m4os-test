@@ -3,8 +3,8 @@
 import { useState } from 'react';
 import styles from './page.module.css';
 
-const ToolCard = ({ title, date, status, role, url, tooltip }: any) => (
-  <div className={styles.toolCard}>
+const ToolCard = ({ title, date, status, role, url, tooltip, colorClass }: any) => (
+  <div className={`${styles.toolCard} ${colorClass}`}>
     <div className={styles.infoIconWrapper}>
       <span className={styles.infoIcon}>i</span>
       <div className={styles.tooltip}>{tooltip}</div>
@@ -43,6 +43,7 @@ export default function DashboardPage() {
               role="자동 발주 및 재고 산출"
               url="https://m4.sandbox.plott.co.kr/"
               tooltip="자동발주시스템: 재고 소모 데이터를 기반으로 필요 수량을 오차범위 5% 내외로 자동 산출"
+              colorClass={styles.borderBlue}
             />
             <ToolCard 
               title="구매발주시트"
@@ -51,6 +52,7 @@ export default function DashboardPage() {
               role="보조 발주 관리"
               url="https://docs.google.com/spreadsheets/d/1Nttiq-90Rv8GPlnPDftTKqtrKIZ3-0SlDrloN4FLzbw/edit#gid=303592076"
               tooltip="기존 발주 방식: SCM 전환 기간 동안 데이터 검증 용도로 활용"
+              colorClass={styles.borderGreen}
             />
             <ToolCard 
               title="소모품발주시트"
@@ -59,12 +61,13 @@ export default function DashboardPage() {
               role="과거 데이터 참고용"
               url="https://docs.google.com/spreadsheets/d/19mHmZcYVCIMJI-teqRPBW8XZYJI4aRf39CPalL60sI8/edit#gid=1993748882"
               tooltip="과거 발주 방식: 현재는 사용 종료. 필요 시 과거 데이터 참고용"
+              colorClass={styles.borderGray}
             />
           </div>
         </section>
 
         {/* Section 2: 과거 아카이빙 */}
-        <section className={`${styles.quadrant} ${styles.section2}`}>
+        <section className={`${styles.quadrant} ${styles.section2} ${styles.borderPurple}`}>
           <div className={styles.sectionHeader}>
             <h2>과거 아카이빙</h2>
             <div className={styles.filterTabs}>
@@ -94,7 +97,7 @@ export default function DashboardPage() {
           <div className={styles.systemLabel}>자동 기준 정리 시스템</div>
           <div className={styles.systemContent}>
             {/* Section 3: 현재 기준 (실시간 수집) */}
-            <section className={`${styles.quadrant} ${styles.connectedQuadrant} ${styles.section3}`}>
+            <section className={`${styles.quadrant} ${styles.connectedQuadrant} ${styles.section3} ${styles.borderBlue}`}>
               <div className={styles.sectionHeader}>
                 <h2>현재 기준 (실시간 수집)</h2>
               </div>
@@ -109,7 +112,7 @@ export default function DashboardPage() {
             <div className={styles.flowArrow}>→</div>
 
             {/* Section 4: AI 자동 요약 */}
-            <section className={`${styles.quadrant} ${styles.connectedQuadrant} ${styles.section4}`}>
+            <section className={`${styles.quadrant} ${styles.connectedQuadrant} ${styles.section4} ${styles.borderBlue}`}>
               <div className={styles.sectionHeader}>
                 <h2>AI 자동 요약</h2>
               </div>

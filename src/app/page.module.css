@@ -22,7 +22,14 @@
   flex-direction: column;
   border: 1px solid var(--border-color);
   overflow: hidden;
+  position: relative;
 }
+
+/* Color Indicators */
+.borderBlue::before { content: ""; position: absolute; top: 0; left: 0; right: 0; height: 4px; background-color: #3182ce; }
+.borderGreen::before { content: ""; position: absolute; top: 0; left: 0; right: 0; height: 4px; background-color: #38a169; }
+.borderGray::before { content: ""; position: absolute; top: 0; left: 0; right: 0; height: 4px; background-color: #a0aec0; }
+.borderPurple::before { content: ""; position: absolute; top: 0; left: 0; right: 0; height: 4px; background-color: #805ad5; }
 
 /* System Pipeline Styling */
 .systemGroup {
@@ -36,7 +43,7 @@
 .systemLabel {
   font-size: 0.7rem;
   font-weight: 800;
-  color: var(--accent-color);
+  color: #3182ce;
   background-color: #ebf8ff;
   padding: 0.2rem 0.6rem;
   border-radius: 4px;
@@ -57,10 +64,6 @@
   background-color: #f0f7ff !important;
   border: 1px solid #dbeafe !important;
   flex: 1;
-}
-
-.connectedQuadrant h2 {
-  color: #2c5282 !important;
 }
 
 .flowArrow {
@@ -98,26 +101,27 @@
 
 .toolCard {
   background-color: #f8fafc;
-  padding: 0.875rem;
+  padding: 1.25rem 0.875rem 0.875rem 0.875rem;
   border-radius: 10px;
   position: relative;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
   border: 1px solid #edf2f7;
+  overflow: hidden;
 }
 
-.infoIconWrapper { position: absolute; top: 0.5rem; left: 0.5rem; z-index: 10; }
+.infoIconWrapper { position: absolute; top: 0.6rem; left: 0.6rem; z-index: 10; }
 .infoIcon { width: 14px; height: 14px; font-size: 0.6rem; border: 1px solid #cbd5e0; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #718096; }
 .tooltip { visibility: hidden; position: absolute; top: 20px; left: 0; width: 220px; background: #2d3748; color: white; padding: 0.75rem; border-radius: 6px; font-size: 0.75rem; z-index: 50; line-height: 1.4; }
 .infoIconWrapper:hover .tooltip { visibility: visible; }
 
-.toolContent h3 { font-size: 0.8125rem; text-align: center; margin-bottom: 0.75rem; font-weight: 700; }
-.toolDetails p { font-size: 0.7rem; margin-bottom: 0.25rem; }
+.toolContent h3 { font-size: 0.8125rem; text-align: center; margin-bottom: 1rem; font-weight: 700; }
+.toolDetails p { font-size: 0.7rem; margin-bottom: 0.35rem; }
 .toolDetails span { font-weight: 600; color: #718096; margin-right: 4px; }
 
 .actionButton {
-  padding: 0.4rem;
+  padding: 0.45rem;
   background: white;
   color: var(--accent-color);
   text-align: center;
@@ -125,7 +129,10 @@
   font-size: 0.7rem;
   font-weight: 600;
   border: 1px solid rgba(49, 130, 206, 0.2);
+  transition: all 0.2s;
 }
+
+.actionButton:hover { background: #ebf8ff; }
 
 /* Content Areas */
 .archiveContent, .slackContent, .aiContent {
@@ -158,8 +165,8 @@
 
 /* Tabs */
 .filterTabs { display: flex; gap: 0.4rem; }
-.filterTabs button { padding: 0.2rem 0.4rem; border-radius: 4px; font-size: 0.65rem; border: none; background: #f1f5f9; cursor: pointer; }
-.activeTab { background: var(--accent-color) !important; color: white !important; }
+.filterTabs button { padding: 0.2rem 0.5rem; border-radius: 4px; font-size: 0.65rem; border: none; background: #f1f5f9; cursor: pointer; color: #64748b; }
+.activeTab { background: #3182ce !important; color: white !important; }
 
 @media (max-width: 1024px) {
   .dashboardContainer { height: auto; overflow: visible; }

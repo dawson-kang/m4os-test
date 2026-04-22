@@ -11,10 +11,16 @@ export default function Sidebar() {
       <nav className={styles.nav}>
         <ul className={styles.navList}>
           <li>
-            <Link href="/" className={styles.navLink}>대시보드</Link>
+            <Link href="/" className={styles.navLink}>
+              <span className={styles.navIcon}>🏠</span>
+              <span className={styles.navText}>대시보드</span>
+            </Link>
           </li>
           <li>
-            <Link href="/personal" className={styles.navLink}>개인 저장 내역</Link>
+            <Link href="/personal" className={styles.navLink}>
+              <span className={styles.navIcon}>👤</span>
+              <span className={styles.navText}>개인 Slack 저장 내역</span>
+            </Link>
           </li>
         </ul>
       </nav>
