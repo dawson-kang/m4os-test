@@ -1,0 +1,2 @@
+.header { height: 64px; background: white; border-bottom: 1px solid var(--border-color); padding: 0 2rem; display: flex; align-items: center; justify-content: space-between; }
+.search { padding: 0.5rem; border: 1px solid var(--border-color); border-radius: 4px; width: 300px; }

@@ -1,0 +1,4 @@
+:root { --primary-color: #1a202c; --secondary-color: #2d3748; --accent-color: #3182ce; --bg-color: #f7fafc; --card-bg: #ffffff; --text-primary: #1a202c; --text-secondary: #718096; --border-color: #e2e8f0; --sidebar-width: 260px; --radius: 8px; --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: sans-serif; background-color: var(--bg-color); color: var(--text-primary); }
+a { text-decoration: none; color: inherit; }
