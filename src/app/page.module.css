@@ -26,44 +26,48 @@
 }
 
 /* Color Indicators */
-.borderBlue::before { content: ""; position: absolute; top: 0; left: 0; right: 0; height: 4px; background-color: #3182ce; }
-.borderGreen::before { content: ""; position: absolute; top: 0; left: 0; right: 0; height: 4px; background-color: #38a169; }
-.borderGray::before { content: ""; position: absolute; top: 0; left: 0; right: 0; height: 4px; background-color: #a0aec0; }
-.borderPurple::before { content: ""; position: absolute; top: 0; left: 0; right: 0; height: 4px; background-color: #805ad5; }
+.borderBlue::before { content: ""; position: absolute; top: 0; left: 0; right: 0; height: 4px; background-color: #3182ce; z-index: 5; }
+.borderGreen::before { content: ""; position: absolute; top: 0; left: 0; right: 0; height: 4px; background-color: #38a169; z-index: 5; }
+.borderGray::before { content: ""; position: absolute; top: 0; left: 0; right: 0; height: 4px; background-color: #a0aec0; z-index: 5; }
+.borderPurple::before { content: ""; position: absolute; top: 0; left: 0; right: 0; height: 4px; background-color: #805ad5; z-index: 5; }
 
-/* System Pipeline Styling */
+/* System Pipeline Styling (Parent Container) */
 .systemGroup {
   grid-column: 1 / span 2;
   display: flex;
   flex-direction: column;
   height: 100%;
-  overflow: hidden;
+  background-color: #f0f7ff; /* Very light blue background for the group */
+  padding: 1rem;
+  border-radius: 16px;
+  border: 1px solid #e1effe;
 }
 
 .systemLabel {
   font-size: 0.7rem;
   font-weight: 800;
   color: #3182ce;
-  background-color: #ebf8ff;
+  background-color: white;
   padding: 0.2rem 0.6rem;
   border-radius: 4px;
   width: fit-content;
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.75rem;
   text-transform: uppercase;
   letter-spacing: 0.02em;
+  border: 1px solid #e1effe;
 }
 
 .systemContent {
   display: flex;
   flex: 1;
-  gap: 0.5rem;
+  gap: 0.75rem;
   align-items: stretch;
 }
 
 .connectedQuadrant {
-  background-color: #f0f7ff !important;
-  border: 1px solid #dbeafe !important;
+  background-color: white !important; /* Restore to white */
   flex: 1;
+  box-shadow: 0 2px 4px rgba(49, 130, 206, 0.05);
 }
 
 .flowArrow {
@@ -74,6 +78,7 @@
   font-size: 1.25rem;
   font-weight: 300;
   padding: 0 0.25rem;
+  opacity: 0.6;
 }
 
 .sectionHeader {
@@ -171,7 +176,7 @@
 @media (max-width: 1024px) {
   .dashboardContainer { height: auto; overflow: visible; }
   .quadrantGrid { grid-template-columns: 1fr; grid-template-rows: auto; }
-  .systemGroup { grid-column: auto; }
+  .systemGroup { grid-column: auto; height: auto; }
   .systemContent { flex-direction: column; }
   .flowArrow { transform: rotate(90deg); padding: 0.5rem 0; }
 }
