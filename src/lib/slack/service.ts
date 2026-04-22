@@ -29,16 +29,19 @@ export const createSlackMessage = (
   ts: string,
   status: SlackItemStatus
 ): SlackMessage => {
+  const now = new Date().toISOString();
   return {
     id: generateSlackId(channel, ts),
     channel,
     ts,
     text: rawText,
-    user: user || 'Unknown',
+    author: user || 'Unknown',
     userId: user || 'U-Unknown',
-    timestamp: new Date().toISOString(), // 실제 운영 시에는 ts를 Date로 변환 권장
+    createdAt: now,
+    updatedAt: now,
     status,
-    source: 'slack'
+    sourceType: 'Slack',
+    permalink: 'https://slack.com' // 실제 운영 시에는 API에서 가져온 링크로 교체
   };
 };
 

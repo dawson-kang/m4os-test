@@ -14,6 +14,8 @@ export interface SlackItem {
   permalink: string;
 }
 
+export type SlackMessage = SlackItem; // 기존 코드 호환성을 위한 별칭 추가
+
 export interface AISummary {
   coreStandards: string[];
   inventoryStandards: string[];
