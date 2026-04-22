@@ -1,7 +1,10 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import styles from './page.module.css';
+import { mockSlackData } from '@/data/slack-mock';
+import { summarizeSlackMessages } from '@/lib/ai/summarizer';
+import { SlackMessage } from '@/types/slack';
 
 const ToolCard = ({ title, date, status, role, url, tooltip, colorClass }: any) => (
   <div className={`${styles.toolCard} ${colorClass}`}>
@@ -23,8 +26,24 @@ const ToolCard = ({ title, date, status, role, url, tooltip, colorClass }: any) 
   </div>
 );
 
+const SlackItem = ({ item }: { item: SlackMessage }) => (
+  <div className={styles.slackItem}>
+    <div className={styles.slackText}>{item.text}</div>
+    <div className={styles.slackMeta}>
+      <span className={styles.slackUser}>{item.user}</span>
+      <span className={styles.slackDate}>{item.timestamp}</span>
+      <span className={`${styles.statusBadge} ${styles[item.status]}`}>{item.status}</span>
+    </div>
+  </div>
+);
+
 export default function DashboardPage() {
   const [archiveFilter, setArchiveFilter] = useState('all');
+  
+  // 데이터 필터링
+  const currentItems = useMemo(() => mockSlackData.filter(i => i.status === 'current'), []);
+  const archivedItems = useMemo(() => mockSlackData.filter(i => i.status === 'archived'), []);
+  const aiSummary = useMemo(() => summarizeSlackMessages(mockSlackData), []);
 
   return (
     <div className={styles.dashboardContainer}>
@@ -79,16 +98,18 @@ export default function DashboardPage() {
                 className={archiveFilter === 'slack' ? styles.activeTab : ''} 
                 onClick={() => setArchiveFilter('slack')}
               >Slack</button>
-              <button 
-                className={archiveFilter === 'sheet' ? styles.activeTab : ''} 
-                onClick={() => setArchiveFilter('sheet')}
-              >구글시트</button>
             </div>
           </div>
           <div className={styles.archiveContent}>
-            <div className={styles.emptyState}>
-              <p>아직 아카이빙된 데이터가 없습니다</p>
-            </div>
+            {archivedItems.length > 0 ? (
+              <div className={styles.listScroll}>
+                {archivedItems.map(item => <SlackItem key={item.id} item={item} />)}
+              </div>
+            ) : (
+              <div className={styles.emptyState}>
+                <p>아직 아카이빙된 데이터가 없습니다</p>
+              </div>
+            )}
           </div>
         </section>
 
@@ -103,9 +124,15 @@ export default function DashboardPage() {
               </div>
               <div className={styles.slackContent}>
                 <p className={styles.sectionDesc}>Dtest 이모지가 달린 Slack 메시지가 자동으로 수집됩니다</p>
-                <div className={styles.emptyState}>
-                  <p>Slack 연동 시 자동으로 기준이 수집됩니다</p>
-                </div>
+                {currentItems.length > 0 ? (
+                  <div className={styles.listScroll}>
+                    {currentItems.map(item => <SlackItem key={item.id} item={item} />)}
+                  </div>
+                ) : (
+                  <div className={styles.emptyState}>
+                    <p>Slack 연동 시 자동으로 기준이 수집됩니다</p>
+                  </div>
+                )}
               </div>
             </section>
 
@@ -117,9 +144,23 @@ export default function DashboardPage() {
                 <h2>AI 자동 요약</h2>
               </div>
               <div className={styles.aiContent}>
-                <div className={styles.emptyState}>
-                  <p>수집된 데이터가 없으면 요약이 생성되지 않습니다</p>
-                </div>
+                {currentItems.length > 0 ? (
+                  <div className={styles.summaryBox}>
+                    <div className={styles.summarySection}>
+                      <h4>핵심 기준</h4>
+                      <ul>{aiSummary.mainPoints.map((p, i) => <li key={i}>{p}</li>)}</ul>
+                    </div>
+                    <div className={styles.summarySection}>
+                      <h4>재고/발주 기준</h4>
+                      <p>{aiSummary.inventoryStandards.concat(aiSummary.orderStandards).join(', ')}</p>
+                    </div>
+                    <div className={styles.sourceTag}>참고 원문: {aiSummary.sourceCount}건</div>
+                  </div>
+                ) : (
+                  <div className={styles.emptyState}>
+                    <p>수집된 데이터가 없으면 요약이 생성되지 않습니다</p>
+                  </div>
+                )}
               </div>
             </section>
           </div>

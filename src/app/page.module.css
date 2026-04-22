@@ -31,13 +31,13 @@
 .borderGray::before { content: ""; position: absolute; top: 0; left: 0; right: 0; height: 4px; background-color: #a0aec0; z-index: 5; }
 .borderPurple::before { content: ""; position: absolute; top: 0; left: 0; right: 0; height: 4px; background-color: #805ad5; z-index: 5; }
 
-/* System Pipeline Styling (Parent Container) */
+/* System Pipeline Styling */
 .systemGroup {
   grid-column: 1 / span 2;
   display: flex;
   flex-direction: column;
   height: 100%;
-  background-color: #f0f7ff; /* Very light blue background for the group */
+  background-color: #f0f7ff;
   padding: 1rem;
   border-radius: 16px;
   border: 1px solid #e1effe;
@@ -65,7 +65,7 @@
 }
 
 .connectedQuadrant {
-  background-color: white !important; /* Restore to white */
+  background-color: white !important;
   flex: 1;
   box-shadow: 0 2px 4px rgba(49, 130, 206, 0.05);
 }
@@ -76,8 +76,6 @@
   justify-content: center;
   color: #3182ce;
   font-size: 1.25rem;
-  font-weight: 300;
-  padding: 0 0.25rem;
   opacity: 0.6;
 }
 
@@ -86,16 +84,14 @@
   justify-content: space-between;
   align-items: center;
   margin-bottom: 1rem;
-  flex-shrink: 0;
 }
 
 .sectionHeader h2 {
   font-size: 0.9375rem;
   font-weight: 700;
-  color: var(--text-primary);
 }
 
-/* Section 1: Tool Grid */
+/* Tool Grid */
 .toolGrid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
@@ -121,10 +117,6 @@
 .tooltip { visibility: hidden; position: absolute; top: 20px; left: 0; width: 220px; background: #2d3748; color: white; padding: 0.75rem; border-radius: 6px; font-size: 0.75rem; z-index: 50; line-height: 1.4; }
 .infoIconWrapper:hover .tooltip { visibility: visible; }
 
-.toolContent h3 { font-size: 0.8125rem; text-align: center; margin-bottom: 1rem; font-weight: 700; }
-.toolDetails p { font-size: 0.7rem; margin-bottom: 0.35rem; }
-.toolDetails span { font-weight: 600; color: #718096; margin-right: 4px; }
-
 .actionButton {
   padding: 0.45rem;
   background: white;
@@ -134,17 +126,85 @@
   font-size: 0.7rem;
   font-weight: 600;
   border: 1px solid rgba(49, 130, 206, 0.2);
-  transition: all 0.2s;
 }
 
-.actionButton:hover { background: #ebf8ff; }
+/* Slack List Styling */
+.listScroll {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding-right: 0.5rem;
+}
 
-/* Content Areas */
-.archiveContent, .slackContent, .aiContent {
+.slackItem {
+  padding: 0.875rem;
+  background-color: #f8fafc;
+  border-radius: 8px;
+  border-left: 3px solid #cbd5e0;
+}
+
+.slackText {
+  font-size: 0.8125rem;
+  line-height: 1.5;
+  margin-bottom: 0.5rem;
+  color: #2d3748;
+}
+
+.slackMeta {
+  display: flex;
+  gap: 0.75rem;
+  font-size: 0.7rem;
+  color: #718096;
+  align-items: center;
+}
+
+.statusBadge {
+  padding: 0.1rem 0.4rem;
+  border-radius: 4px;
+  font-size: 0.625rem;
+  text-transform: uppercase;
+  font-weight: 700;
+}
+
+.statusBadge.current { background-color: #ebf8ff; color: #3182ce; }
+.statusBadge.archived { background-color: #f7fafc; color: #718096; }
+
+/* AI Summary Styling */
+.summaryBox {
   flex: 1;
   display: flex;
   flex-direction: column;
-  overflow: hidden;
+  gap: 1rem;
+}
+
+.summarySection h4 {
+  font-size: 0.75rem;
+  color: #3182ce;
+  margin-bottom: 0.4rem;
+  border-bottom: 1px solid #ebf8ff;
+  padding-bottom: 0.2rem;
+}
+
+.summarySection ul {
+  list-style: disc;
+  padding-left: 1.25rem;
+  font-size: 0.8125rem;
+  color: #4a5568;
+}
+
+.summarySection p {
+  font-size: 0.8125rem;
+  color: #4a5568;
+  line-height: 1.5;
+}
+
+.sourceTag {
+  margin-top: auto;
+  font-size: 0.7rem;
+  color: #a0aec0;
+  text-align: right;
 }
 
 .emptyState {
@@ -154,29 +214,20 @@
   justify-content: center;
   border: 1px dashed rgba(203, 213, 224, 0.5);
   border-radius: 8px;
-}
-
-.emptyState p {
-  font-size: 0.75rem;
   color: #a0aec0;
+  font-size: 0.75rem;
 }
 
-.sectionDesc {
-  font-size: 0.7rem;
-  color: #718096;
-  margin-bottom: 0.75rem;
-  flex-shrink: 0;
-}
+.sectionDesc { font-size: 0.7rem; color: #718096; margin-bottom: 0.75rem; }
 
-/* Tabs */
 .filterTabs { display: flex; gap: 0.4rem; }
-.filterTabs button { padding: 0.2rem 0.5rem; border-radius: 4px; font-size: 0.65rem; border: none; background: #f1f5f9; cursor: pointer; color: #64748b; }
+.filterTabs button { padding: 0.2rem 0.5rem; border-radius: 4px; font-size: 0.65rem; border: none; background: #f1f5f9; cursor: pointer; }
 .activeTab { background: #3182ce !important; color: white !important; }
 
 @media (max-width: 1024px) {
   .dashboardContainer { height: auto; overflow: visible; }
   .quadrantGrid { grid-template-columns: 1fr; grid-template-rows: auto; }
-  .systemGroup { grid-column: auto; height: auto; }
+  .systemGroup { grid-column: auto; }
   .systemContent { flex-direction: column; }
   .flowArrow { transform: rotate(90deg); padding: 0.5rem 0; }
 }
