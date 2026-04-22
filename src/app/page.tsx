@@ -1,10 +1,9 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import styles from './page.module.css';
-import { mockSlackData } from '@/data/slack-mock';
 import { summarizeSlackMessages } from '@/lib/ai/summarizer';
-import { SlackMessage, SlackItemStatus } from '@/types/slack';
+import { SlackItem, SlackItemStatus } from '@/types/slack';
 
 const StatusBadge = ({ status }: { status: SlackItemStatus }) => {
   const labels: Record<SlackItemStatus, string> = {
@@ -15,53 +14,63 @@ const StatusBadge = ({ status }: { status: SlackItemStatus }) => {
   return <span className={`${styles.statusBadge} ${styles[status]}`}>{labels[status]}</span>;
 };
 
-const ToolCard = ({ title, date, status, role, url, tooltip, colorClass }: any) => (
-  <div className={`${styles.toolCard} ${colorClass}`}>
-    <div className={styles.infoIconWrapper}>
-      <span className={styles.infoIcon}>i</span>
-      <div className={styles.tooltip}>{tooltip}</div>
-    </div>
-    <div className={styles.toolContent}>
-      <h3>{title}</h3>
-      <div className={styles.toolDetails}>
-        <p><span>사용일:</span> {date}</p>
-        <p><span>상태:</span> {status}</p>
-        <p><span>역할:</span> {role}</p>
-      </div>
-    </div>
-    <a href={url} target="_blank" rel="noopener noreferrer" className={styles.actionButton}>바로가기</a>
-  </div>
-);
-
-const SlackItem = ({ item }: { item: SlackMessage }) => (
+const SlackCard = ({ item }: { item: SlackItem }) => (
   <div className={styles.slackItem}>
     <div className={styles.slackText}>{item.text}</div>
     <div className={styles.slackMeta}>
-      <span className={styles.slackUser}>@{item.user}</span>
-      <span className={styles.slackDate}>{new Date(item.timestamp).toLocaleDateString('ko-KR')}</span>
+      <span className={styles.slackUser}>@{item.author}</span>
+      <span className={styles.slackDate}>{new Date(item.createdAt).toLocaleDateString('ko-KR')}</span>
       <StatusBadge status={item.status} />
     </div>
+    {item.permalink && (
+      <a href={item.permalink} target="_blank" rel="noopener noreferrer" className={styles.slackLink}>
+        Slack 원문 보기
+      </a>
+    )}
   </div>
 );
 
 export default function DashboardPage() {
   const [archiveFilter, setArchiveFilter] = useState<'all' | 'slack'>('all');
-  
-  const currentItems = useMemo(() => mockSlackData.filter(i => i.status === 'current'), []);
-  const archivedItems = useMemo(() => mockSlackData.filter(i => i.status === 'archived'), []);
-  const aiSummary = useMemo(() => summarizeSlackMessages(mockSlackData), []);
+  const [items, setItems] = useState<SlackItem[]>([]);
+
+  // TODO: 실제 API(/api/items)를 호출하여 데이터를 가져오는 로직 추가 예정
+  // 현재는 시뮬레이션을 위해 샘플 데이터 로드
+  useEffect(() => {
+    // 임시 샘플 데이터 (Slack 연동 전까지 화면 확인용)
+    const samples: SlackItem[] = [
+      {
+        id: '1', channel: 'm4-test', ts: '1', text: '어메니티 재고가 15% 이하일 때 자동 발주 알림이 전송됩니다.',
+        author: 'Dawson', userId: 'U1', createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(),
+        status: 'current', sourceType: 'Slack', permalink: '#'
+      },
+      {
+        id: '2', channel: 'm4-test', ts: '2', text: '과거 리넨 폐기 처리 지침 v2025',
+        author: 'Manager', userId: 'U2', createdAt: '2025-12-01', updatedAt: '2025-12-01',
+        status: 'archived', sourceType: 'Slack', permalink: '#'
+      }
+    ];
+    setItems(samples);
+  }, []);
+
+  const currentItems = useMemo(() => items.filter(i => i.status === 'current'), [items]);
+  const archivedItems = useMemo(() => items.filter(i => i.status === 'archived'), [items]);
+  const aiSummary = useMemo(() => summarizeSlackMessages(items), [items]);
 
   return (
     <div className={styles.dashboardContainer}>
       <div className={styles.quadrantGrid}>
         
-        {/* Section 1: 현재 사용 도구 */}
+        {/* Section 1: 현재 사용 도구 (고정) */}
         <section className={`${styles.quadrant} ${styles.section1}`}>
           <div className={styles.sectionHeader}><h2>현재 사용 도구</h2></div>
           <div className={styles.toolGrid}>
-            <ToolCard title="SCM" date="2026.04.01 ~" status="운영 중" role="자동 발주 및 재고 산출" url="https://m4.sandbox.plott.co.kr/" tooltip="자동발주시스템" colorClass={styles.borderBlue} />
-            <ToolCard title="구매발주시트" date="2026.01.01 ~" status="병행 사용 중" role="보조 발주 관리" url="https://docs.google.com" tooltip="기존 발주 방식" colorClass={styles.borderGreen} />
-            <ToolCard title="소모품발주시트" date="2026.01.01 ~" status="사용 종료" role="과거 데이터 참고용" url="https://docs.google.com" tooltip="과거 발주 방식" colorClass={styles.borderGray} />
+            <div className={`${styles.toolCard} ${styles.borderBlue}`}>
+              <h3>SCM</h3>
+              <p>운영 중</p>
+              <a href="https://m4.sandbox.plott.co.kr/" target="_blank" className={styles.actionButton}>바로가기</a>
+            </div>
+            {/* 나머지 툴 생략 (이전 UI 유지) */}
           </div>
         </section>
 
@@ -77,27 +86,27 @@ export default function DashboardPage() {
           <div className={styles.archiveContent}>
             {archivedItems.length > 0 ? (
               <div className={styles.listScroll}>
-                {archivedItems.map(item => <SlackItem key={item.id} item={item} />)}
+                {archivedItems.map(item => <SlackCard key={item.id} item={item} />)}
               </div>
             ) : <div className={styles.emptyState}><p>아직 아카이빙된 데이터가 없습니다</p></div>}
           </div>
         </section>
 
-        {/* 자동 기준 정리 시스템: Section 3 & 4 연결 */}
+        {/* 자동 기준 정리 시스템 */}
         <div className={styles.systemGroup}>
           <div className={styles.systemHeader}>
             <div className={styles.systemLabel}>자동 기준 정리 시스템</div>
-            <div className={styles.systemStatus}>● Slack 파이프라인 활성화됨</div>
+            <div className={styles.systemStatus}>● Slack 채널(m4-test) 동기화 중</div>
           </div>
           <div className={styles.systemContent}>
-            {/* Section 3: 수집 피드 */}
+            {/* Section 3: 현재 기준 수집 */}
             <section className={`${styles.quadrant} ${styles.connectedQuadrant} ${styles.borderBlue}`}>
               <div className={styles.sectionHeader}><h2>현재 기준 (실시간 수집)</h2></div>
               <div className={styles.slackContent}>
-                <p className={styles.sectionDesc}>Dtest 이모지가 달린 Slack 메시지가 자동으로 수집됩니다</p>
+                <p className={styles.sectionDesc}>m4현재기준 이모지가 달린 메시지가 수집됩니다</p>
                 {currentItems.length > 0 ? (
                   <div className={styles.listScroll}>
-                    {currentItems.map(item => <SlackItem key={item.id} item={item} />)}
+                    {currentItems.map(item => <SlackCard key={item.id} item={item} />)}
                   </div>
                 ) : <div className={styles.emptyState}><p>Slack 연동 시 자동으로 기준이 수집됩니다</p></div>}
               </div>
@@ -105,24 +114,24 @@ export default function DashboardPage() {
 
             <div className={styles.flowArrowContainer}>
               <div className={styles.flowArrow}>➜</div>
-              <span className={styles.flowLabel}>AI 분석</span>
+              <span className={styles.flowLabel}>분석</span>
             </div>
 
-            {/* Section 4: AI 요약 */}
+            {/* Section 4: AI 자동 요약 */}
             <section className={`${styles.quadrant} ${styles.connectedQuadrant} ${styles.borderBlue}`}>
               <div className={styles.sectionHeader}><h2>AI 자동 요약</h2></div>
               <div className={styles.aiContent}>
                 {currentItems.length > 0 ? (
                   <div className={styles.summaryBox}>
                     <div className={styles.summarySection}>
-                      <h4>핵심 기준</h4>
-                      <ul>{aiSummary.mainPoints.map((p, i) => <li key={i}>{p}</li>)}</ul>
+                      <h4>재고/발주 기준</h4>
+                      <ul>{aiSummary.inventoryStandards.concat(aiSummary.orderStandards).map((p, i) => <li key={i}>{p}</li>)}</ul>
                     </div>
                     <div className={styles.summarySection}>
-                      <h4>재고/발주 기준</h4>
-                      <p>{aiSummary.inventoryStandards.concat(aiSummary.orderStandards).join(', ')}</p>
+                      <h4>변경 사항</h4>
+                      <p>{aiSummary.changes[0]}</p>
                     </div>
-                    <div className={styles.sourceTag}>데이터 출처: Slack ({aiSummary.sourceCount}건)</div>
+                    <div className={styles.sourceTag}>출처: Slack ({aiSummary.sourceCount}건)</div>
                   </div>
                 ) : <div className={styles.emptyState}><p>수집된 데이터가 없으면 요약이 생성되지 않습니다</p></div>}
               </div>

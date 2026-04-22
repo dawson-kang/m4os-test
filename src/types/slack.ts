@@ -1,21 +1,21 @@
 export type SlackItemStatus = 'current' | 'archived' | 'stopped';
 
-export interface SlackMessage {
-  id: string; // channel_ts 조합 (unique key)
+export interface SlackItem {
+  id: string; // channel_ts 조합 (Unique Key)
   channel: string;
   ts: string;
   text: string;
-  user: string;
+  author: string;
   userId: string;
-  timestamp: string;
+  createdAt: string;
+  updatedAt: string;
   status: SlackItemStatus;
-  source: 'slack';
-  permalink?: string;
-  reactions?: string[];
+  sourceType: 'Slack';
+  permalink: string;
 }
 
 export interface AISummary {
-  mainPoints: string[];
+  coreStandards: string[];
   inventoryStandards: string[];
   orderStandards: string[];
   changes: string[];

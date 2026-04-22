@@ -1,14 +1,14 @@
-import { SlackMessage, AISummary } from '@/types/slack';
+import { SlackItem, AISummary } from '@/types/slack';
 
 /**
- * 수집된 '현재 기준' 메시지들을 AI를 통해 요약 (현재는 플레이스홀더 로직)
+ * '현재 기준' 데이터만을 활용한 팩트 기반 요약 로직
  */
-export const summarizeSlackMessages = (messages: SlackMessage[]): AISummary => {
-  const currentMessages = messages.filter(m => m.status === 'current');
+export const summarizeSlackMessages = (items: SlackItem[]): AISummary => {
+  const currentItems = items.filter(item => item.status === 'current');
   
-  if (currentMessages.length === 0) {
+  if (currentItems.length === 0) {
     return {
-      mainPoints: [],
+      coreStandards: [],
       inventoryStandards: [],
       orderStandards: [],
       changes: [],
@@ -17,24 +17,23 @@ export const summarizeSlackMessages = (messages: SlackMessage[]): AISummary => {
     };
   }
 
-  // TODO: 향후 OpenAI / Workers AI 연동 시 아래 로직을 실제 AI 호출로 교체
-  // 현재는 데이터 추출 기반의 안전한 팩트 요약 플레이스홀더
-  
-  return {
-    mainPoints: [
-      "실무 기준 실시간 수집 및 동기화 진행 중",
-      `총 ${currentMessages.length}건의 Slack 메시지를 기반으로 분석됨`
-    ],
-    inventoryStandards: currentMessages
-      .filter(m => m.text.includes('재고') || m.text.includes('리필'))
-      .map(m => m.text),
-    orderStandards: currentMessages
-      .filter(m => m.text.includes('발주'))
-      .map(m => m.text),
+  // 팩트 추출 로직 (현재는 간단한 키워드 기반 분류)
+  const summary: AISummary = {
+    coreStandards: currentItems
+      .filter(i => i.text.includes('핵심') || i.text.includes('중요'))
+      .map(i => i.text),
+    inventoryStandards: currentItems
+      .filter(i => i.text.includes('재고') || i.text.includes('리필'))
+      .map(i => i.text),
+    orderStandards: currentItems
+      .filter(i => i.text.includes('발주') || i.text.includes('구매'))
+      .map(i => i.text),
     changes: [
-      "최근 운영 정책 변경 사항 반영됨"
+      `최근 ${currentItems.length}개의 Slack 메시지로부터 기준 정보가 업데이트되었습니다.`
     ],
-    conflicts: [], // 상충 항목 감지 로직 플레이스홀더
-    sourceCount: currentMessages.length
+    conflicts: [], // TODO: 텍스트 중복 및 상충 분석 로직 추가 가능
+    sourceCount: currentItems.length
   };
+
+  return summary;
 };
