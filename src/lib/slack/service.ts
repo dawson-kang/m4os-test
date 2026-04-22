@@ -1,14 +1,14 @@
 import { SlackMessage, SlackItemStatus } from '@/types/slack';
 
 /**
- * Slack 메시지 ID 생성 (멱등성 보장)
+ * Slack 메시지 고유 ID 생성 (Deduplication의 핵심)
  */
 export const generateSlackId = (channel: string, ts: string): string => {
   return `${channel}-${ts}`;
 };
 
 /**
- * 이모지에 따른 상태 매핑
+ * 이모지 반응에 따른 상태 결정 (Idempotent State Mapping)
  */
 export const getStatusByReaction = (reaction: string): SlackItemStatus | null => {
   const mapping: Record<string, SlackItemStatus> = {
@@ -20,31 +20,55 @@ export const getStatusByReaction = (reaction: string): SlackItemStatus | null =>
 };
 
 /**
- * Slack 메시지 정규화 (보안상 민감 정보 제외)
+ * Slack 메시지 객체 생성 및 정규화
  */
-export const normalizeSlackMessage = (
-  rawMessage: any, 
-  channel: string, 
-  ts: string, 
+export const createSlackMessage = (
+  rawText: string,
+  user: string,
+  channel: string,
+  ts: string,
   status: SlackItemStatus
 ): SlackMessage => {
   return {
     id: generateSlackId(channel, ts),
     channel,
     ts,
-    text: rawMessage.text || '',
-    user: rawMessage.user || 'Unknown User',
-    userId: rawMessage.user || 'U-Unknown',
-    timestamp: new Date().toLocaleDateString('ko-KR'), // 실전에서는 ts를 변환
+    text: rawText,
+    user: user || 'Unknown',
+    userId: user || 'U-Unknown',
+    timestamp: new Date().toISOString(), // 실제 운영 시에는 ts를 Date로 변환 권장
     status,
     source: 'slack'
   };
 };
 
 /**
- * TODO: Cloudflare D1 / KV 연동 시 이 부분을 데이터베이스 작업으로 교체
+ * 멱등성 보장형 데이터 업데이트 프로세서
+ * (실제 DB 연동 시 이 함수 내부에서 upsert 로직을 구현합니다)
  */
-export const updateMessageInStorage = async (message: SlackMessage) => {
-  console.log(`[Storage Update] ID: ${message.id}, Status: ${message.status}`);
-  // 실전: await DB.upsert(message)
-};
+export async function processSlackEvent(event: any) {
+  const { reaction, item, user: userId } = event;
+  const status = getStatusByReaction(reaction);
+
+  if (!status || item.type !== 'message') return null;
+
+  const slackId = generateSlackId(item.channel, item.ts);
+  
+  console.log(`[Slack Event] Processing ${reaction} for ${slackId} -> Target Status: ${status}`);
+
+  // TODO: 실제 환경에서는 fetch(`https://slack.com/api/conversations.replies`) 호출
+  // const token = process.env.SLACK_BOT_TOKEN;
+
+  const normalizedMessage = createSlackMessage(
+    `[${reaction}] 자동 수집된 운영 기준 메시지입니다.`, // Mock text
+    userId,
+    item.channel,
+    item.ts,
+    status
+  );
+
+  // Storage 연동 (D1, KV 등)
+  // await DB.upsert(normalizedMessage);
+  
+  return normalizedMessage;
+}
