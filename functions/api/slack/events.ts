@@ -4,10 +4,23 @@ interface Env {
 }
 
 /**
+ * Cloudflare Pages Function context 타입 정의
+ * 글로벌 PagesFunction 타입 의존성을 제거하기 위해 로컬에 최소한으로 정의합니다.
+ */
+interface EventContext {
+  request: Request;
+  env: Env;
+  params: Record<string, string | string[]>;
+  waitUntil: (promise: Promise<any>) => void;
+  next: (input?: Request | string, init?: RequestInit) => Promise<Response>;
+  data: Record<string, any>;
+}
+
+/**
  * Cloudflare Pages Function: Slack Events API 핸들러
  * 경로: /api/slack/events
  */
-export const onRequestPost: PagesFunction<Env> = async (context) => {
+export async function onRequestPost(context: EventContext): Promise<Response> {
   try {
     const { request, env } = context;
 
@@ -15,7 +28,6 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
     const body: any = await request.json();
 
     // 2. Slack URL Verification Challenge 처리
-    // Slack 앱 설정 시 'Request URL' 검증을 통과하기 위한 핵심 로직입니다.
     if (body.type === 'url_verification') {
       return new Response(body.challenge, {
         status: 200,
@@ -27,12 +39,10 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
     if (body.type === 'event_callback') {
       const event = body.event;
 
-      // reaction_added 이벤트 감지 시 로직 (Placeholder)
+      // reaction_added 이벤트 감지
       if (event.type === 'reaction_added') {
         const { reaction, item } = event;
         console.log(`[Slack Function] Reaction: ${reaction} in channel: ${item.channel}`);
-        
-        // 여기에 m4현재기준 / m4아카이빙 / m4삭제 로직을 추가할 수 있습니다.
       }
     }
 
@@ -49,4 +59,4 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
       headers: { 'Content-Type': 'application/json' },
     });
   }
-};
+}
