@@ -1,5 +1,5 @@
 .dashboardContainer {
-  height: calc(100vh - 64px);
+  height: 100vh;
   overflow: hidden;
   padding: 1rem 1.5rem;
   background-color: var(--bg-color);
@@ -9,8 +9,9 @@
 .quadrantGrid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  grid-template-rows: calc(45vh) calc(45vh);
+  grid-template-rows: 30vh 1fr;
   gap: 12px;
+  height: calc(100% - 0px);
 }
 
 .quadrant {
@@ -179,11 +180,10 @@
 .toolGrid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: 1fr;
   gap: 0.75rem;
   flex: 1;
-  overflow-y: auto;
   min-height: 0;
-  align-content: start;
 }
 
 .toolCard {

@@ -244,8 +244,10 @@ async function fetchUserName(userId: string, token: string): Promise<string> {
       console.warn(`[DEBUG][fetchUserName] users.info failed for userId=${userId}:`, data.error);
       return userId;
     }
-    const name = data.user?.real_name || data.user?.name || userId;
-    console.log(`[DEBUG][fetchUserName] userId=${userId} → name="${name}"`);
+    // display_name (프로필 설정 이름) → real_name → name → userId 순으로 폴백
+    const profile = data.user?.profile;
+    const name = profile?.display_name || data.user?.real_name || data.user?.name || userId;
+    console.log(`[DEBUG][fetchUserName] userId=${userId} → display_name="${profile?.display_name}" real_name="${data.user?.real_name}" → using="${name}"`);
     return name;
   } catch (e) {
     console.error('[DEBUG][fetchUserName] Error:', e);
