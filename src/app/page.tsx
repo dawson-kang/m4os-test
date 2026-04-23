@@ -17,7 +17,7 @@ const SlackCard = ({ item }: { item: SlackItem }) => (
   <div className={styles.slackItem}>
     <div className={styles.slackText}>{item.text}</div>
     <div className={styles.slackMeta}>
-      <span className={styles.slackUser}>@{item.user || item.author}</span>
+      <span className={styles.slackUser}>@{item.author}</span>
       <span className={styles.slackDate}>{new Date(item.createdAt).toLocaleTimeString('ko-KR')}</span>
       <StatusBadge status={item.status} />
     </div>

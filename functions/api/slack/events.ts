@@ -8,7 +8,7 @@ interface SlackItem {
   channel: string;
   ts: string;
   text: string;
-  user: string;
+  author: string;
   createdAt: string;
   status: 'current' | 'archived' | 'stopped';
   permalink: string;
@@ -106,7 +106,7 @@ export async function onRequestPost(context: any) {
             channel: item.channel,
             ts: item.ts,
             text: msgData.text,
-            user: msgData.user,
+            author: msgData.user,
             createdAt: new Date().toISOString(),
             status: status as any,
             permalink: msgData.permalink
