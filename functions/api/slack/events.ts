@@ -232,32 +232,57 @@ function resolveStatus(reactions: string[]): SlackItem['status'] | null {
   return null;
 }
 
-async function fetchSlackMessage(channel: string, ts: string, token: string) {
-  console.log(`[DEBUG][fetchSlackMessage] Attempting fetch — channel=${channel} ts=${ts}`);
+async function fetchUserName(userId: string, token: string): Promise<string> {
+  if (!userId || userId === 'Unknown') return userId;
   try {
     const res  = await fetch(
-      `https://slack.com/api/conversations.replies?channel=${channel}&ts=${ts}&limit=1`,
+      `https://slack.com/api/users.info?user=${userId}`,
       { headers: { Authorization: `Bearer ${token}` } }
     );
     const data: any = await res.json();
+    if (!data.ok) {
+      console.warn(`[DEBUG][fetchUserName] users.info failed for userId=${userId}:`, data.error);
+      return userId;
+    }
+    const name = data.user?.real_name || data.user?.name || userId;
+    console.log(`[DEBUG][fetchUserName] userId=${userId} → name="${name}"`);
+    return name;
+  } catch (e) {
+    console.error('[DEBUG][fetchUserName] Error:', e);
+    return userId;
+  }
+}
+
+async function fetchSlackMessage(channel: string, ts: string, token: string) {
+  console.log(`[DEBUG][fetchSlackMessage] Attempting fetch — channel=${channel} ts=${ts}`);
+  try {
+    const [msgRes, linkRes] = await Promise.all([
+      fetch(
+        `https://slack.com/api/conversations.replies?channel=${channel}&ts=${ts}&limit=1`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      ),
+      fetch(
+        `https://slack.com/api/chat.getPermalink?channel=${channel}&message_ts=${ts}`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      ),
+    ]);
+
+    const data: any     = await msgRes.json();
+    const linkData: any = await linkRes.json();
     console.log(`[DEBUG][fetchSlackMessage] conversations.replies ok=${data.ok} count=${data.messages?.length ?? 0}`);
+    console.log(`[DEBUG][fetchSlackMessage] chat.getPermalink ok=${linkData.ok} permalink=${linkData.permalink}`);
 
     const message = data.messages?.[0];
     if (!message) console.warn(`[DEBUG][fetchSlackMessage] No message returned for ts=${ts}`);
 
-    const linkRes  = await fetch(
-      `https://slack.com/api/chat.getPermalink?channel=${channel}&message_ts=${ts}`,
-      { headers: { Authorization: `Bearer ${token}` } }
-    );
-    const linkData: any = await linkRes.json();
-    console.log(`[DEBUG][fetchSlackMessage] chat.getPermalink ok=${linkData.ok} permalink=${linkData.permalink}`);
+    const authorName = await fetchUserName(message?.user ?? '', token);
 
     const result = {
-      text:      message?.text  || '(내용 없음)',
-      user:      message?.user  || 'Unknown',
+      text:      message?.text || '(내용 없음)',
+      user:      authorName,
       permalink: linkData.permalink || '#'
     };
-    console.log(`[DEBUG][fetchSlackMessage] Success — user=${result.user} text_len=${result.text.length}`);
+    console.log(`[DEBUG][fetchSlackMessage] Success — user="${result.user}" text_len=${result.text.length}`);
     return result;
   } catch (e) {
     console.error('[DEBUG][fetchSlackMessage] Slack API Fetch Error:', e);

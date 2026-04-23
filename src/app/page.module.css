@@ -1,16 +1,16 @@
 .dashboardContainer {
-  min-height: calc(100vh - 64px);
-  overflow-y: auto;
-  padding: 1rem 1.5rem 1.5rem 1.5rem;
+  height: calc(100vh - 64px);
+  overflow: hidden;
+  padding: 1rem 1.5rem;
   background-color: var(--bg-color);
+  box-sizing: border-box;
 }
 
 .quadrantGrid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  grid-template-rows: minmax(300px, 1fr) minmax(300px, 1fr);
-  gap: 1rem;
-  min-height: 100%;
+  grid-template-rows: calc(45vh) calc(45vh);
+  gap: 12px;
 }
 
 .quadrant {
@@ -23,14 +23,15 @@
   border: 1px solid var(--border-color);
   overflow: hidden;
   position: relative;
-  min-height: 300px;
+  height: 100%;
+  box-sizing: border-box;
 }
 
 /* Color Indicators */
-.borderBlue::before { content: ""; position: absolute; top: 0; left: 0; right: 0; height: 4px; background-color: #3182ce; z-index: 5; }
+.borderBlue::before   { content: ""; position: absolute; top: 0; left: 0; right: 0; height: 4px; background-color: #3182ce; z-index: 5; }
 .borderPurple::before { content: ""; position: absolute; top: 0; left: 0; right: 0; height: 4px; background-color: #805ad5; z-index: 5; }
-.borderGreen::before { content: ""; position: absolute; top: 0; left: 0; right: 0; height: 4px; background-color: #38a169; z-index: 5; }
-.borderGray::before { content: ""; position: absolute; top: 0; left: 0; right: 0; height: 4px; background-color: #a0aec0; z-index: 5; }
+.borderGreen::before  { content: ""; position: absolute; top: 0; left: 0; right: 0; height: 4px; background-color: #38a169; z-index: 5; }
+.borderGray::before   { content: ""; position: absolute; top: 0; left: 0; right: 0; height: 4px; background-color: #a0aec0; z-index: 5; }
 
 /* System Pipeline Styling */
 .systemGroup {
@@ -38,11 +39,12 @@
   display: flex;
   flex-direction: column;
   height: 100%;
-  min-height: 300px;
   background-color: #f7faff;
   padding: 1.25rem;
   border-radius: 16px;
   border: 1px solid #e1effe;
+  box-sizing: border-box;
+  overflow: hidden;
 }
 
 .systemHeader {
@@ -50,6 +52,7 @@
   justify-content: space-between;
   align-items: center;
   margin-bottom: 0.75rem;
+  flex-shrink: 0;
 }
 
 .systemLabel {
@@ -68,21 +71,22 @@
   font-weight: 600;
 }
 
-.connected { color: #38a169; }
+.connected    { color: #38a169; }
 .disconnected { color: #e53e3e; }
 
 .systemContent {
   display: flex;
   flex: 1;
-  gap: 1rem;
+  gap: 12px;
   align-items: stretch;
+  min-height: 0;
 }
 
 .connectedQuadrant {
   background-color: white !important;
   flex: 1;
-  min-height: 300px;
   border: 1px solid #e2e8f0 !important;
+  min-height: 0;
 }
 
 .flowArrowContainer {
@@ -92,39 +96,123 @@
   justify-content: center;
   gap: 0.5rem;
   min-width: 60px;
+  flex-shrink: 0;
 }
 
 .flowArrow { color: #3182ce; font-size: 1.5rem; font-weight: 700; }
-.flowLabel { font-size: 0.65rem; font-weight: 700; color: #a0aec0; text-transform: uppercase; }
+.flowLabel  { font-size: 0.65rem; font-weight: 700; color: #a0aec0; text-transform: uppercase; }
 
-.sectionHeader h2 { font-size: 0.9375rem; font-weight: 700; }
+.sectionHeader         { flex-shrink: 0; }
+.sectionHeader h2      { font-size: 0.9375rem; font-weight: 700; }
 
 /* Status Badges */
-.statusBadge { padding: 0.15rem 0.5rem; border-radius: 4px; font-size: 0.65rem; font-weight: 700; }
-.statusBadge.current { background-color: #ebf8ff; color: #3182ce; }
+.statusBadge          { padding: 0.15rem 0.5rem; border-radius: 4px; font-size: 0.65rem; font-weight: 700; }
+.statusBadge.current  { background-color: #ebf8ff; color: #3182ce; }
 .statusBadge.archived { background-color: #f3e8ff; color: #805ad5; }
-.statusBadge.stopped { background-color: #f7fafc; color: #718096; }
+.statusBadge.stopped  { background-color: #f7fafc; color: #718096; }
+
+/* Scrollable content areas */
+.listScroll,
+.archiveContent,
+.slackContent,
+.aiContent {
+  flex: 1;
+  overflow-y: auto;
+  min-height: 0;
+}
+
+.slackContent {
+  display: flex;
+  flex-direction: column;
+}
 
 /* Slack Item */
 .slackItem {
-  padding: 1rem;
+  padding: 0.875rem 1rem;
   background-color: #f8fafc;
   border-radius: 10px;
   border: 1px solid #edf2f7;
   margin-bottom: 0.75rem;
+  border-left-width: 3px;
 }
 
-.slackText { font-size: 0.8125rem; line-height: 1.5; margin-bottom: 0.75rem; color: #1a202c; }
-.slackMeta { display: flex; justify-content: space-between; align-items: center; font-size: 0.75rem; color: #718096; }
+.slackText {
+  font-size: 0.8125rem;
+  line-height: 1.6;
+  margin-bottom: 0.5rem;
+  color: #1a202c;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.slackTextClamped {
+  font-size: 0.8125rem;
+  line-height: 1.6;
+  margin-bottom: 0.5rem;
+  color: #1a202c;
+  white-space: pre-wrap;
+  word-break: break-word;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.expandBtn {
+  background: none;
+  border: none;
+  color: #3182ce;
+  font-size: 0.72rem;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0;
+  margin-bottom: 0.5rem;
+  display: block;
+}
+
+.slackMeta { display: flex; justify-content: space-between; align-items: center; font-size: 0.75rem; color: #718096; flex-wrap: wrap; gap: 0.25rem; }
 .slackUser { font-weight: 600; color: #4a5568; }
-.slackLink { font-size: 0.7rem; color: #3182ce; text-decoration: underline; margin-top: 0.5rem; display: inline-block; }
+.slackDate { color: #a0aec0; }
+.slackLink { font-size: 0.7rem; color: #3182ce; text-decoration: underline; margin-top: 0.4rem; display: inline-block; }
 
 /* Tool Cards */
-.toolGrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 0.75rem; flex: 1; overflow-y: auto; }
-.toolCard { background-color: #f8fafc; padding: 1.25rem 1rem 1rem 1rem; border-radius: 10px; position: relative; display: flex; flex-direction: column; justify-content: space-between; border: 1px solid #edf2f7; overflow: hidden; }
-.toolCard h3 { font-size: 0.8125rem; text-align: center; margin-bottom: 0.5rem; font-weight: 700; }
-.toolCard p { font-size: 0.75rem; text-align: center; color: #718096; }
-.actionButton { padding: 0.45rem; background: white; color: var(--accent-color); text-align: center; border-radius: 6px; font-size: 0.7rem; font-weight: 600; border: 1px solid rgba(49, 130, 206, 0.2); margin-top: 0.75rem; }
+.toolGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.75rem;
+  flex: 1;
+  overflow-y: auto;
+  min-height: 0;
+  align-content: start;
+}
+
+.toolCard {
+  background-color: #f8fafc;
+  padding: 1.25rem 1rem 1rem 1rem;
+  border-radius: 10px;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  border: 1px solid #edf2f7;
+  overflow: hidden;
+}
+
+.toolCard h3 { font-size: 0.875rem; font-weight: 700; margin-bottom: 0.25rem; }
+.toolCard p  { font-size: 0.75rem; color: #718096; margin-top: 0.25rem; }
+
+.actionButton {
+  padding: 0.45rem;
+  background: white;
+  color: var(--accent-color);
+  text-align: center;
+  border-radius: 6px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  border: 1px solid rgba(49, 130, 206, 0.2);
+  margin-top: 0.75rem;
+  display: block;
+}
 
 /* Content Areas */
 .emptyState {
@@ -139,17 +227,47 @@
   background-color: rgba(255, 255, 255, 0.5);
 }
 
-.sectionDesc { font-size: 0.7rem; color: #718096; margin-bottom: 0.75rem; }
+.sectionDesc { font-size: 0.7rem; color: #718096; margin-bottom: 0.75rem; flex-shrink: 0; }
 
-.filterTabs { display: flex; gap: 0.4rem; }
-.filterTabs button { padding: 0.2rem 0.5rem; border-radius: 4px; font-size: 0.65rem; border: none; background: #f1f5f9; cursor: pointer; }
-.activeTab { background: #3182ce !important; color: white !important; }
+/* AI Summary */
+.summaryBox {
+  display: flex;
+  flex-direction: column;
+  gap: 0.875rem;
+}
+
+.summarySection h4 {
+  font-size: 0.8rem;
+  font-weight: 700;
+  margin-bottom: 0.35rem;
+}
+
+.summarySection ul {
+  margin: 0;
+  padding-left: 1.1rem;
+}
+
+.summarySection li {
+  font-size: 0.78rem;
+  line-height: 1.55;
+  color: #2d3748;
+  margin-bottom: 0.15rem;
+}
+
+.sourceTag {
+  font-size: 0.68rem;
+  color: #a0aec0;
+  padding-top: 0.5rem;
+  border-top: 1px solid #e2e8f0;
+  flex-shrink: 0;
+}
 
 @media (max-width: 1024px) {
   .dashboardContainer { height: auto; overflow: visible; }
   .quadrantGrid { grid-template-columns: 1fr; grid-template-rows: auto; }
-  .systemGroup { grid-column: auto; height: auto; }
+  .systemGroup  { grid-column: auto; height: auto; }
   .systemContent { flex-direction: column; }
   .flowArrowContainer { flex-direction: row; padding: 1rem 0; }
   .flowArrow { transform: rotate(90deg); }
+  .toolGrid { grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); }
 }
