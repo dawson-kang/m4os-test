@@ -291,10 +291,19 @@ export async function onRequestGet(context: any) {
   }
 }
 
+const M4_EMOJIS = new Set(['m4_current', 'm4_archive', 'm4_delete']);
+
 // ── Reaction event handler (reaction_added & reaction_removed) ────────────
 
 async function handleReactionEvent(event: any, env: Env): Promise<void> {
-  const { item } = event;
+  const { item, reaction } = event;
+
+  // m4 이모지가 아니면 무시 (불필요한 Slack API 호출 방지)
+  if (!M4_EMOJIS.has(reaction)) {
+    console.log(`[DEBUG][handleReactionEvent] IGNORED — reaction "${reaction}" is not an m4 emoji`);
+    return;
+  }
+
   if (item?.type !== 'message') {
     console.log(`[DEBUG][handleReactionEvent] IGNORED — item.type="${item?.type}" (not a message)`);
     return;
