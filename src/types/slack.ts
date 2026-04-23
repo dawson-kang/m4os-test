@@ -22,5 +22,6 @@ export interface AISummary {
   orderStandards: string[];
   changes: string[];
   conflicts: string[];
+  others: string[];
   sourceCount: number;
 }

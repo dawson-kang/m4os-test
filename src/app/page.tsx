@@ -30,13 +30,37 @@ const SlackCard = ({ item }: { item: SlackItem }) => (
 );
 
 function deterministicSummarize(currentItems: SlackItem[]): AISummary {
+  // 중복 제거 (동일 텍스트)
+  const seen = new Set<string>();
+  const unique = currentItems.filter(i => {
+    const key = i.text.trim();
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+
+  // 최신순 정렬
+  const sorted = [...unique].sort(
+    (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+  );
+
+  const coreStandards = sorted.filter(i => i.text.includes('기준') || i.text.includes('원칙')).map(i => i.text);
+  const inventoryStandards = sorted.filter(i => i.text.includes('재고') || i.text.includes('리필')).map(i => i.text);
+  const orderStandards = sorted.filter(i => i.text.includes('발주') || i.text.includes('구매')).map(i => i.text);
+  const changes = sorted.filter(i => i.text.includes('변경') || i.text.includes('수정')).map(i => i.text);
+
+  // 어느 카테고리에도 해당하지 않는 메시지 → 기타
+  const categorized = new Set([...coreStandards, ...inventoryStandards, ...orderStandards, ...changes]);
+  const others = sorted.filter(i => !categorized.has(i.text)).map(i => i.text);
+
   return {
-    coreStandards: currentItems.filter(i => i.text.includes('기준') || i.text.includes('원칙')).map(i => i.text),
-    inventoryStandards: currentItems.filter(i => i.text.includes('재고') || i.text.includes('리필')).map(i => i.text),
-    orderStandards: currentItems.filter(i => i.text.includes('발주') || i.text.includes('구매')).map(i => i.text),
-    changes: currentItems.filter(i => i.text.includes('변경') || i.text.includes('수정')).map(i => i.text),
+    coreStandards,
+    inventoryStandards,
+    orderStandards,
+    changes,
     conflicts: [],
-    sourceCount: currentItems.length
+    others,
+    sourceCount: sorted.length
   };
 }
 
@@ -127,13 +151,22 @@ export default function DashboardPage() {
               <div className={styles.aiContent}>
                 {items.current.length > 0 ? (
                   <div className={styles.summaryBox}>
-                    <div className={styles.summarySection}>
-                      <h4>핵심/재고/발주 기준</h4>
-                      <ul>
-                        {aiSummary.coreStandards.concat(aiSummary.inventoryStandards, aiSummary.orderStandards)
-                          .slice(0, 5).map((p, i) => <li key={i}>{p}</li>)}
-                      </ul>
-                    </div>
+                    {([
+                      { label: '핵심 기준 / 원칙', items: aiSummary.coreStandards },
+                      { label: '재고 / 리필 기준', items: aiSummary.inventoryStandards },
+                      { label: '발주 / 구매 기준', items: aiSummary.orderStandards },
+                      { label: '변경 / 수정 사항', items: aiSummary.changes },
+                      { label: '기타', items: aiSummary.others },
+                    ] as { label: string; items: string[] }[])
+                      .filter(cat => cat.items.length > 0)
+                      .map(cat => (
+                        <div key={cat.label} className={styles.summarySection}>
+                          <h4>{cat.label}</h4>
+                          <ul>
+                            {cat.items.map((text, i) => <li key={i}>{text}</li>)}
+                          </ul>
+                        </div>
+                      ))}
                     <div className={styles.sourceTag}>데이터 출처: Slack ({aiSummary.sourceCount}건)</div>
                   </div>
                 ) : <div className={styles.emptyState}><p>요약할 데이터가 없습니다</p></div>}
