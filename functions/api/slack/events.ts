@@ -160,6 +160,23 @@ async function firestoreUpsert(projectId: string, token: string, item: SlackItem
   console.log(`[DEBUG][firestore] UPSERTED id=${item.id} status=${item.status}`);
 }
 
+async function firestoreDelete(projectId: string, token: string, id: string): Promise<void> {
+  const res = await fetch(docUrl(projectId, id), {
+    method: 'DELETE',
+    headers: { Authorization: `Bearer ${token}` }
+  });
+  if (!res.ok) {
+    const data: any = await res.json().catch(() => ({}));
+    if (data.error?.code === 404) {
+      console.log(`[DEBUG][firestore] DELETE id=${id} — already gone`);
+      return;
+    }
+    console.error(`[DEBUG][firestore] DELETE error for id=${id}:`, JSON.stringify(data));
+    throw new Error(`Firestore DELETE failed: ${data.error?.message ?? res.status}`);
+  }
+  console.log(`[DEBUG][firestore] DELETED id=${id}`);
+}
+
 async function firestoreQueryByStatus(projectId: string, token: string, status: string): Promise<SlackItem[]> {
   const url = `https://firestore.googleapis.com/v1/projects/${projectId}/databases/(default)/documents:runQuery`;
   const res  = await fetch(url, {
@@ -191,6 +208,29 @@ async function firestoreQueryByStatus(projectId: string, token: string, status: 
 }
 
 // ── Slack helpers ──────────────────────────────────────────────────────────
+
+async function fetchReactions(channel: string, ts: string, token: string): Promise<string[]> {
+  const res = await fetch(
+    `https://slack.com/api/reactions.get?channel=${channel}&timestamp=${ts}`,
+    { headers: { Authorization: `Bearer ${token}` } }
+  );
+  const data: any = await res.json();
+  if (!data.ok) {
+    console.error('[DEBUG][fetchReactions] Failed:', JSON.stringify(data));
+    return [];
+  }
+  const reactions = (data.message?.reactions ?? []).map((r: any) => r.name as string);
+  console.log(`[DEBUG][fetchReactions] channel=${channel} ts=${ts} reactions=[${reactions.join(', ')}]`);
+  return reactions;
+}
+
+// 우선순위: m4_delete > m4_archive > m4_current > null(삭제)
+function resolveStatus(reactions: string[]): SlackItem['status'] | null {
+  if (reactions.includes('m4_delete'))  return 'stopped';
+  if (reactions.includes('m4_archive')) return 'archived';
+  if (reactions.includes('m4_current')) return 'current';
+  return null;
+}
 
 async function fetchSlackMessage(channel: string, ts: string, token: string) {
   console.log(`[DEBUG][fetchSlackMessage] Attempting fetch — channel=${channel} ts=${ts}`);
@@ -251,6 +291,63 @@ export async function onRequestGet(context: any) {
   }
 }
 
+// ── Reaction event handler (reaction_added & reaction_removed) ────────────
+
+async function handleReactionEvent(event: any, env: Env): Promise<void> {
+  const { item } = event;
+  if (item?.type !== 'message') {
+    console.log(`[DEBUG][handleReactionEvent] IGNORED — item.type="${item?.type}" (not a message)`);
+    return;
+  }
+
+  const id = `${item.channel}-${item.ts}`;
+  console.log(`[DEBUG][handleReactionEvent] event.type=${event.type} reaction="${event.reaction}" id="${id}"`);
+
+  // [1] 현재 reactions 전체 조회
+  const reactions = await fetchReactions(item.channel, item.ts, env.SLACK_BOT_TOKEN);
+
+  // [2] 우선순위에 따라 status 결정
+  const status = resolveStatus(reactions);
+  console.log(`[DEBUG][handleReactionEvent] resolvedStatus=${status ?? 'null(delete)'}`);
+
+  const token = await getAccessToken(env.FIREBASE_CLIENT_EMAIL, env.FIREBASE_PRIVATE_KEY);
+
+  // [3] 관련 이모지가 없으면 Firestore 문서 삭제
+  if (status === null) {
+    await firestoreDelete(env.FIREBASE_PROJECT_ID, token, id);
+    return;
+  }
+
+  const existing = await firestoreGet(env.FIREBASE_PROJECT_ID, token, id);
+
+  if (existing) {
+    // [4] 기존 문서 status 업데이트
+    existing.status = status;
+    await firestoreUpsert(env.FIREBASE_PROJECT_ID, token, existing);
+    console.log(`[Slack] Updated ${id} → ${status}`);
+  } else if (status !== 'stopped') {
+    // [5] 신규 문서 생성 (m4_delete 단독이면 저장 불필요)
+    const msgData = await fetchSlackMessage(item.channel, item.ts, env.SLACK_BOT_TOKEN);
+    if (msgData) {
+      await firestoreUpsert(env.FIREBASE_PROJECT_ID, token, {
+        id,
+        channel:   item.channel,
+        ts:        item.ts,
+        text:      msgData.text,
+        author:    msgData.user,
+        createdAt: new Date().toISOString(),
+        status,
+        permalink: msgData.permalink
+      });
+      console.log(`[Slack] Collected new message: ${id} → ${status}`);
+    } else {
+      console.error(`[DEBUG][handleReactionEvent] Message fetch FAILED for id="${id}" — item NOT stored`);
+    }
+  } else {
+    console.log(`[DEBUG][handleReactionEvent] SKIPPED — status="stopped" for brand-new id="${id}"`);
+  }
+}
+
 // ── POST handler — writes to Firestore ────────────────────────────────────
 
 export async function onRequestPost(context: any) {
@@ -269,61 +366,11 @@ export async function onRequestPost(context: any) {
     const event = body.event;
     console.log(`[DEBUG][POST /api/slack/events] event_callback — event.type=${event.type}`);
 
-    if (event.type === 'reaction_added') {
-      const { reaction, item } = event;
-      console.log(`[DEBUG][POST /api/slack/events] reaction_added — reaction="${reaction}" channel="${item?.channel}" ts="${item?.ts}"`);
-
-      // [1] Emoji → status mapping
-      const emojiMap: Record<string, string> = {
-        'm4_current': 'current',
-        'm4_archive': 'archived',
-        'm4_delete':  'stopped'
-      };
-
-      const status = emojiMap[reaction];
-      if (!status) {
-        console.log(`[DEBUG][POST /api/slack/events] IGNORED — reaction "${reaction}" not in emojiMap`);
-        return new Response('OK', { status: 200 });
-      }
-      console.log(`[DEBUG][POST /api/slack/events] ACCEPTED — reaction "${reaction}" → status="${status}"`);
-
-      const id = `${item.channel}-${item.ts}`;
-      console.log(`[DEBUG][POST /api/slack/events] id="${id}"`);
-
+    if (event.type === 'reaction_added' || event.type === 'reaction_removed') {
       try {
-        const token    = await getAccessToken(env.FIREBASE_CLIENT_EMAIL, env.FIREBASE_PRIVATE_KEY);
-        const existing = await firestoreGet(env.FIREBASE_PROJECT_ID, token, id);
-        console.log(`[DEBUG][POST /api/slack/events] Firestore doc exists=${existing !== null}`);
-
-        if (existing) {
-          // [2] Update status of known item
-          existing.status = status as SlackItem['status'];
-          await firestoreUpsert(env.FIREBASE_PROJECT_ID, token, existing);
-          console.log(`[Slack] Updated ${id} to ${status}`);
-        } else if (status !== 'stopped') {
-          // [3] Fetch & store new item (skip if the very first emoji is m4_delete)
-          console.log(`[DEBUG][POST /api/slack/events] New item — fetching Slack message for id="${id}"`);
-          const msgData = await fetchSlackMessage(item.channel, item.ts, env.SLACK_BOT_TOKEN);
-          if (msgData) {
-            await firestoreUpsert(env.FIREBASE_PROJECT_ID, token, {
-              id,
-              channel:   item.channel,
-              ts:        item.ts,
-              text:      msgData.text,
-              author:    msgData.user,
-              createdAt: new Date().toISOString(),
-              status:    status as SlackItem['status'],
-              permalink: msgData.permalink
-            });
-            console.log(`[Slack] Collected new message: ${id}`);
-          } else {
-            console.error(`[DEBUG][POST /api/slack/events] Message fetch FAILED for id="${id}" — item NOT stored`);
-          }
-        } else {
-          console.log(`[DEBUG][POST /api/slack/events] SKIPPED — status="stopped" for brand-new id="${id}"`);
-        }
+        await handleReactionEvent(event, env);
       } catch (e) {
-        console.error(`[DEBUG][POST /api/slack/events] Firestore error for id="${id}":`, e);
+        console.error(`[DEBUG][POST /api/slack/events] Error handling ${event.type}:`, e);
       }
     } else {
       console.log(`[DEBUG][POST /api/slack/events] IGNORED — event.type="${event.type}"`);
