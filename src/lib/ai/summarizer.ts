@@ -13,6 +13,7 @@ export const summarizeSlackMessages = (items: SlackItem[]): AISummary => {
       orderStandards: [],
       changes: [],
       conflicts: [],
+      others: [],
       sourceCount: 0
     };
   }
@@ -31,7 +32,8 @@ export const summarizeSlackMessages = (items: SlackItem[]): AISummary => {
     changes: [
       `최근 ${currentItems.length}개의 Slack 메시지로부터 기준 정보가 업데이트되었습니다.`
     ],
-    conflicts: [], // TODO: 텍스트 중복 및 상충 분석 로직 추가 가능
+    conflicts: [],
+    others: [],
     sourceCount: currentItems.length
   };
 
