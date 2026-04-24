@@ -107,7 +107,7 @@
 .sectionHeader h2      { font-size: 0.9375rem; font-weight: 700; }
 
 /* Status Badges */
-.statusBadge          { padding: 0.15rem 0.5rem; border-radius: 4px; font-size: 0.65rem; font-weight: 700; }
+.statusBadge          { padding: 0.15rem 0.5rem; border-radius: 4px; font-size: 0.65rem; font-weight: 700; flex-shrink: 0; }
 .statusBadge.current  { background-color: #ebf8ff; color: #3182ce; }
 .statusBadge.archived { background-color: #f3e8ff; color: #805ad5; }
 .statusBadge.stopped  { background-color: #f7fafc; color: #718096; }
@@ -127,54 +127,119 @@
   flex-direction: column;
 }
 
-/* Slack Item */
-.slackItem {
-  padding: 0.875rem 1rem;
-  background-color: #f8fafc;
-  border-radius: 10px;
-  border: 1px solid #edf2f7;
-  margin-bottom: 0.75rem;
-  border-left-width: 3px;
+/* Archive Row */
+.archiveRow {
+  border-bottom: 1px solid #edf2f7;
 }
 
-.slackText {
-  font-size: 0.8125rem;
-  line-height: 1.6;
-  margin-bottom: 0.5rem;
-  color: #1a202c;
-  white-space: pre-wrap;
-  word-break: break-word;
+.archiveRow:last-child {
+  border-bottom: none;
 }
 
-.slackTextClamped {
-  font-size: 0.8125rem;
-  line-height: 1.6;
-  margin-bottom: 0.5rem;
-  color: #1a202c;
-  white-space: pre-wrap;
-  word-break: break-word;
-  display: -webkit-box;
-  -webkit-line-clamp: 3;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-
-.expandBtn {
-  background: none;
-  border: none;
-  color: #3182ce;
-  font-size: 0.72rem;
-  font-weight: 600;
+.archiveRowHeader {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.78rem;
   cursor: pointer;
-  padding: 0;
-  margin-bottom: 0.5rem;
-  display: block;
+  padding: 0.35rem 0.4rem;
+  border-radius: 6px;
+  flex-wrap: nowrap;
+  min-width: 0;
 }
 
-.slackMeta { display: flex; justify-content: space-between; align-items: center; font-size: 0.75rem; color: #718096; flex-wrap: wrap; gap: 0.25rem; }
-.slackUser { font-weight: 600; color: #4a5568; }
-.slackDate { color: #a0aec0; }
-.slackLink { font-size: 0.7rem; color: #3182ce; text-decoration: underline; margin-top: 0.4rem; display: inline-block; }
+.archiveRowHeader:hover {
+  background-color: #f7f0ff;
+}
+
+/* Current Row */
+.currentRow {
+  border-bottom: 1px solid #edf2f7;
+}
+
+.currentRow:last-child {
+  border-bottom: none;
+}
+
+.currentRowHeader {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.78rem;
+  cursor: pointer;
+  padding: 0.35rem 0.4rem;
+  border-radius: 6px;
+  flex-wrap: nowrap;
+  min-width: 0;
+}
+
+.currentRowHeader:hover {
+  background-color: #f0f7ff;
+}
+
+/* Shared row elements */
+.rowPreview {
+  font-weight: 600;
+  color: #2d3748;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex-shrink: 1;
+  min-width: 0;
+  max-width: 180px;
+}
+
+.rowSep {
+  color: #cbd5e0;
+  flex-shrink: 0;
+  font-size: 0.7rem;
+}
+
+.rowUser {
+  color: #4a5568;
+  font-weight: 600;
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+.rowTime {
+  color: #a0aec0;
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+.rowLink {
+  font-size: 0.68rem;
+  color: #3182ce;
+  text-decoration: underline;
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+.rowToggle {
+  margin-left: auto;
+  color: #a0aec0;
+  font-size: 0.6rem;
+  flex-shrink: 0;
+  padding-left: 0.25rem;
+}
+
+.rowExpanded {
+  padding: 0.5rem 0.6rem 0.6rem;
+  background-color: #f8fafc;
+  border-radius: 8px;
+  margin: 0.2rem 0.4rem 0.35rem;
+}
+
+.rowExpandedText {
+  font-size: 0.8rem;
+  line-height: 1.6;
+  color: #2d3748;
+  white-space: pre-wrap;
+  word-break: break-word;
+  font-family: inherit;
+  margin: 0 0 0.35rem;
+}
 
 /* Tool Cards */
 .toolGrid {
@@ -188,29 +253,37 @@
 
 .toolCard {
   background-color: #f8fafc;
-  padding: 1.25rem 1rem 1rem 1rem;
+  padding: 0.55rem 0.75rem;
   border-radius: 10px;
   position: relative;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
+  justify-content: center;
+  gap: 0.3rem;
   border: 1px solid #edf2f7;
   overflow: hidden;
 }
 
-.toolCard h3 { font-size: 0.875rem; font-weight: 700; margin-bottom: 0.25rem; }
-.toolCard p  { font-size: 0.75rem; color: #718096; margin-top: 0.25rem; }
+.toolCard h3 {
+  font-size: 0.8rem;
+  font-weight: 700;
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.toolCard p  { font-size: 0.75rem; color: #718096; margin: 0; }
 
 .actionButton {
-  padding: 0.45rem;
+  padding: 0.3rem;
   background: white;
   color: var(--accent-color);
   text-align: center;
   border-radius: 6px;
-  font-size: 0.7rem;
+  font-size: 0.68rem;
   font-weight: 600;
   border: 1px solid rgba(49, 130, 206, 0.2);
-  margin-top: 0.75rem;
   display: block;
 }
 
@@ -227,7 +300,7 @@
   background-color: rgba(255, 255, 255, 0.5);
 }
 
-.sectionDesc { font-size: 0.7rem; color: #718096; margin-bottom: 0.75rem; flex-shrink: 0; }
+.sectionDesc { font-size: 0.7rem; color: #718096; margin-bottom: 0.5rem; flex-shrink: 0; }
 
 /* AI Summary */
 .summaryBox {
@@ -262,11 +335,12 @@
   flex-shrink: 0;
 }
 
-/* Vote Button */
-.voteRow {
-  margin-top: 0.5rem;
-  display: flex;
+/* Vote / Not Now */
+.voteArea {
+  display: inline-flex;
   align-items: center;
+  gap: 0.25rem;
+  flex-shrink: 0;
 }
 
 .voteWrapper {
@@ -274,54 +348,45 @@
   display: inline-flex;
 }
 
-.voteBtn {
+.notNowBtn {
   display: inline-flex;
+  flex-direction: column;
   align-items: center;
-  gap: 0.3rem;
-  padding: 0.25rem 0.6rem;
-  font-size: 0.72rem;
+  padding: 0.2rem 0.45rem;
+  font-size: 0.6rem;
   font-weight: 600;
+  line-height: 1.3;
+  gap: 0.05rem;
   border: 1px solid #e2e8f0;
-  border-radius: 20px;
+  border-radius: 6px;
   background: white;
   color: #718096;
   cursor: pointer;
   transition: background 0.15s, color 0.15s, border-color 0.15s;
 }
 
-.voteBtn:hover:not(:disabled) {
+.notNowBtn:hover:not(:disabled) {
   background: #ebf8ff;
   color: #3182ce;
   border-color: #bee3f8;
 }
 
-.voteBtnActive {
+.notNowBtnActive {
   background: #ebf8ff;
   color: #3182ce;
   border-color: #90cdf4;
 }
 
-.voteBtn:disabled {
+.notNowBtn:disabled {
   cursor: default;
   opacity: 0.6;
 }
 
-.voteCount {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 1.1rem;
-  height: 1.1rem;
-  padding: 0 0.25rem;
-  background: #3182ce;
-  color: white;
-  border-radius: 10px;
-  font-size: 0.65rem;
+.inlineVoteCount {
+  font-size: 0.68rem;
   font-weight: 700;
-}
-
-.voteBtnActive .voteCount {
-  background: #2b6cb0;
+  color: #3182ce;
+  flex-shrink: 0;
 }
 
 .voteTooltip {

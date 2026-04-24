@@ -65,20 +65,62 @@ const StatusBadge = ({ status }: { status: SlackItemStatus }) => {
   return <span className={`${styles.statusBadge} ${styles[status]}`}>{labels[status]}</span>;
 };
 
-const SlackCard = ({
+const ArchiveRow = ({ item }: { item: SlackItem }) => {
+  const [expanded, setExpanded] = useState(false);
+  const flat = item.text.replace(/\n/g, ' ');
+  const preview = flat.slice(0, 30);
+  const needsEllipsis = flat.length > 30;
+
+  return (
+    <div className={styles.archiveRow}>
+      <div className={styles.archiveRowHeader} onClick={() => setExpanded(e => !e)}>
+        <span className={styles.rowPreview}>{preview}{needsEllipsis ? '…' : ''}</span>
+        <span className={styles.rowSep}>|</span>
+        <span className={styles.rowUser}>@{item.author}</span>
+        <span className={styles.rowSep}>|</span>
+        <span className={styles.rowTime}>{new Date(item.createdAt).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })}</span>
+        <span className={styles.rowSep}>|</span>
+        <StatusBadge status={item.status} />
+        {item.permalink && (
+          <>
+            <span className={styles.rowSep}>|</span>
+            <a
+              href={item.permalink}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={styles.rowLink}
+              onClick={e => e.stopPropagation()}
+            >
+              Slack 원문 보기
+            </a>
+          </>
+        )}
+        <span className={styles.rowToggle}>{expanded ? '▲' : '▼'}</span>
+      </div>
+      {expanded && (
+        <div className={styles.rowExpanded}>
+          <p className={styles.rowExpandedText}>{item.text}</p>
+        </div>
+      )}
+    </div>
+  );
+};
+
+const CurrentRow = ({
   item,
-  accentColor,
   userName,
   onVote,
 }: {
   item: SlackItem;
-  accentColor?: string;
   userName?: string | null;
   onVote?: (itemId: string) => void;
 }) => {
   const [expanded, setExpanded] = useState(false);
   const [showVoters, setShowVoters] = useState(false);
-  const isLong = item.text.length > 100 || item.text.includes('\n');
+
+  const flat = item.text.replace(/\n/g, ' ');
+  const preview = flat.slice(0, 30);
+  const needsEllipsis = flat.length > 30;
 
   const votes      = item.votes ?? {};
   const voteCount  = Object.keys(votes).length;
@@ -86,46 +128,45 @@ const SlackCard = ({
   const voterNames = Object.keys(votes);
 
   return (
-    <div
-      className={styles.slackItem}
-      style={{ borderLeftColor: accentColor ?? '#e2e8f0' }}
-    >
-      <div className={expanded ? styles.slackText : styles.slackTextClamped}>
-        {item.text}
-      </div>
-      {isLong && (
-        <button className={styles.expandBtn} onClick={() => setExpanded(e => !e)}>
-          {expanded ? '접기 ▲' : '더보기 ▼'}
-        </button>
-      )}
-      <div className={styles.slackMeta}>
-        <span className={styles.slackUser}>{item.author}</span>
-        <span className={styles.slackDate}>{new Date(item.createdAt).toLocaleTimeString('ko-KR')}</span>
-        <StatusBadge status={item.status} />
-      </div>
-      {item.permalink && (
-        <a href={item.permalink} target="_blank" rel="noopener noreferrer" className={styles.slackLink}>
-          Slack 원문 보기
-        </a>
-      )}
-      {item.status === 'current' && (
-        <div className={styles.voteRow}>
-          <div
-            className={styles.voteWrapper}
-            onMouseEnter={() => voteCount > 0 && setShowVoters(true)}
-            onMouseLeave={() => setShowVoters(false)}
-          >
+    <div className={styles.currentRow}>
+      <div className={styles.currentRowHeader} onClick={() => setExpanded(e => !e)}>
+        <span className={styles.rowPreview}>{preview}{needsEllipsis ? '…' : ''}</span>
+        <span className={styles.rowSep}>|</span>
+        <span className={styles.rowUser}>@{item.author}</span>
+        <span className={styles.rowSep}>|</span>
+        <span className={styles.rowTime}>{new Date(item.createdAt).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })}</span>
+        <span className={styles.rowSep}>|</span>
+        <div
+          className={styles.voteArea}
+          onClick={e => e.stopPropagation()}
+          onMouseEnter={() => voteCount > 0 && setShowVoters(true)}
+          onMouseLeave={() => setShowVoters(false)}
+        >
+          <div className={styles.voteWrapper}>
             <button
-              className={`${styles.voteBtn} ${hasVoted ? styles.voteBtnActive : ''}`}
+              className={`${styles.notNowBtn} ${hasVoted ? styles.notNowBtnActive : ''}`}
               onClick={() => userName && onVote?.(item.id)}
               disabled={!userName}
             >
-              📦 과거로?{voteCount > 0 && <span className={styles.voteCount}>{voteCount}</span>}
+              <span>🧊</span>
+              <span>Not Now</span>
             </button>
             {showVoters && voterNames.length > 0 && (
               <div className={styles.voteTooltip}>{voterNames.join(', ')}</div>
             )}
           </div>
+          {voteCount > 0 && <span className={styles.inlineVoteCount}>{voteCount}</span>}
+        </div>
+        <span className={styles.rowToggle}>{expanded ? '▲' : '▼'}</span>
+      </div>
+      {expanded && (
+        <div className={styles.rowExpanded}>
+          <p className={styles.rowExpandedText}>{item.text}</p>
+          {item.permalink && (
+            <a href={item.permalink} target="_blank" rel="noopener noreferrer" className={styles.rowLink}>
+              Slack 원문 보기
+            </a>
+          )}
         </div>
       )}
     </div>
@@ -133,7 +174,6 @@ const SlackCard = ({
 };
 
 function deterministicSummarize(currentItems: SlackItem[]): AISummary {
-  // 중복 제거 (동일 텍스트)
   const seen = new Set<string>();
   const unique = currentItems.filter(i => {
     const key = i.text.trim();
@@ -142,7 +182,6 @@ function deterministicSummarize(currentItems: SlackItem[]): AISummary {
     return true;
   });
 
-  // 최신순 정렬
   const sorted = [...unique].sort(
     (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
   );
@@ -152,7 +191,6 @@ function deterministicSummarize(currentItems: SlackItem[]): AISummary {
   const orderStandards     = sorted.filter(i => i.text.includes('발주') || i.text.includes('구매')).map(i => i.text);
   const changes            = sorted.filter(i => i.text.includes('변경') || i.text.includes('수정')).map(i => i.text);
 
-  // 어느 카테고리에도 해당하지 않는 메시지 → 기타
   const categorized = new Set([...coreStandards, ...inventoryStandards, ...orderStandards, ...changes]);
   const others      = sorted.filter(i => !categorized.has(i.text)).map(i => i.text);
 
@@ -256,7 +294,7 @@ export default function DashboardPage() {
           <div className={styles.sectionHeader}><h2>과거 아카이빙</h2></div>
           <div className={styles.archiveContent}>
             {items.archived.length > 0
-              ? items.archived.map(item => <SlackCard key={item.id} item={item} accentColor="#805ad5" />)
+              ? items.archived.map(item => <ArchiveRow key={item.id} item={item} />)
               : <div className={styles.emptyState}><p>아카이빙된 데이터가 없습니다</p></div>}
           </div>
         </section>
@@ -283,7 +321,7 @@ export default function DashboardPage() {
                 <p className={styles.sectionDesc}>m4_current 이모지가 달린 메시지</p>
                 {items.current.length > 0
                   ? items.current.map(item => (
-                      <SlackCard key={item.id} item={item} accentColor="#3182ce" userName={userName} onVote={handleVote} />
+                      <CurrentRow key={item.id} item={item} userName={userName} onVote={handleVote} />
                     ))
                   : <div className={styles.emptyState}><p>수집된 데이터가 없습니다</p></div>}
               </div>
