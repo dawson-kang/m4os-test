@@ -12,6 +12,7 @@ export interface SlackItem {
   status: SlackItemStatus;
   sourceType: 'Slack';
   permalink: string;
+  votes?: Record<string, boolean>; // { "이름1": true, "이름2": true }
 }
 
 export type SlackMessage = SlackItem; // 기존 코드 호환성을 위한 별칭 추가

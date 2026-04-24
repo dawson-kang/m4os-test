@@ -4,6 +4,38 @@ import { useState, useEffect, useMemo } from 'react';
 import styles from './page.module.css';
 import { SlackItem, SlackItemStatus, AISummary } from '@/types/slack';
 
+// TODO: 로그인 기능 추가 후 localStorage 기반 임시 이름 로직을 교체 예정
+const USER_NAME_KEY = 'm4os_user_name';
+
+const NameInputModal = ({ onSubmit }: { onSubmit: (name: string) => void }) => {
+  const [value, setValue] = useState('');
+  const trimmed = value.trim();
+  return (
+    <div className={styles.modalOverlay}>
+      <div className={styles.modal}>
+        <h2>이름을 입력해주세요</h2>
+        <p>투표 기능 사용을 위해 이름이 필요합니다.</p>
+        <input
+          type="text"
+          className={styles.modalInput}
+          value={value}
+          onChange={e => setValue(e.target.value)}
+          onKeyDown={e => e.key === 'Enter' && trimmed && onSubmit(trimmed)}
+          placeholder="이름 입력"
+          autoFocus
+        />
+        <button
+          className={styles.modalBtn}
+          onClick={() => trimmed && onSubmit(trimmed)}
+          disabled={!trimmed}
+        >
+          확인
+        </button>
+      </div>
+    </div>
+  );
+};
+
 const TOOLS = [
   { name: 'SCM', url: 'https://m4.sandbox.plott.co.kr/' },
   {
@@ -33,9 +65,25 @@ const StatusBadge = ({ status }: { status: SlackItemStatus }) => {
   return <span className={`${styles.statusBadge} ${styles[status]}`}>{labels[status]}</span>;
 };
 
-const SlackCard = ({ item, accentColor }: { item: SlackItem; accentColor?: string }) => {
+const SlackCard = ({
+  item,
+  accentColor,
+  userName,
+  onVote,
+}: {
+  item: SlackItem;
+  accentColor?: string;
+  userName?: string | null;
+  onVote?: (itemId: string) => void;
+}) => {
   const [expanded, setExpanded] = useState(false);
+  const [showVoters, setShowVoters] = useState(false);
   const isLong = item.text.length > 100 || item.text.includes('\n');
+
+  const votes      = item.votes ?? {};
+  const voteCount  = Object.keys(votes).length;
+  const hasVoted   = userName ? !!votes[userName] : false;
+  const voterNames = Object.keys(votes);
 
   return (
     <div
@@ -59,6 +107,26 @@ const SlackCard = ({ item, accentColor }: { item: SlackItem; accentColor?: strin
         <a href={item.permalink} target="_blank" rel="noopener noreferrer" className={styles.slackLink}>
           Slack 원문 보기
         </a>
+      )}
+      {item.status === 'current' && (
+        <div className={styles.voteRow}>
+          <div
+            className={styles.voteWrapper}
+            onMouseEnter={() => voteCount > 0 && setShowVoters(true)}
+            onMouseLeave={() => setShowVoters(false)}
+          >
+            <button
+              className={`${styles.voteBtn} ${hasVoted ? styles.voteBtnActive : ''}`}
+              onClick={() => userName && onVote?.(item.id)}
+              disabled={!userName}
+            >
+              📦 과거로?{voteCount > 0 && <span className={styles.voteCount}>{voteCount}</span>}
+            </button>
+            {showVoters && voterNames.length > 0 && (
+              <div className={styles.voteTooltip}>{voterNames.join(', ')}</div>
+            )}
+          </div>
+        </div>
       )}
     </div>
   );
@@ -96,6 +164,53 @@ const truncate = (text: string) => text.length > 50 ? text.slice(0, 50) + '…' 
 export default function DashboardPage() {
   const [items, setItems] = useState<{ current: SlackItem[]; archived: SlackItem[] }>({ current: [], archived: [] });
   const [lastSync, setLastSync] = useState<Date>(new Date());
+  // TODO: 로그인 기능 추가 후 아래 localStorage 기반 userName 로직 교체 예정
+  const [userName, setUserName] = useState<string | null>(null);
+  const [showNameModal, setShowNameModal] = useState(false);
+
+  useEffect(() => {
+    const stored = localStorage.getItem(USER_NAME_KEY);
+    if (stored) {
+      setUserName(stored);
+    } else {
+      setShowNameModal(true);
+    }
+  }, []);
+
+  const handleNameSubmit = (name: string) => {
+    localStorage.setItem(USER_NAME_KEY, name);
+    setUserName(name);
+    setShowNameModal(false);
+  };
+
+  const handleVote = async (itemId: string) => {
+    if (!userName) return;
+
+    // 낙관적 업데이트: 서버 응답 전에 UI 즉시 반영
+    setItems(prev => {
+      const toggleVotes = (arr: SlackItem[]) => arr.map(item => {
+        if (item.id !== itemId) return item;
+        const votes = { ...(item.votes ?? {}) };
+        if (votes[userName]) {
+          delete votes[userName];
+        } else {
+          votes[userName] = true;
+        }
+        return { ...item, votes };
+      });
+      return { current: toggleVotes(prev.current), archived: toggleVotes(prev.archived) };
+    });
+
+    try {
+      await fetch('/api/slack/vote', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ itemId, userName }),
+      });
+    } catch (e) {
+      console.error('Vote error:', e);
+    }
+  };
 
   useEffect(() => {
     const fetchState = async () => {
@@ -118,6 +233,7 @@ export default function DashboardPage() {
 
   return (
     <div className={styles.dashboardContainer}>
+      {showNameModal && <NameInputModal onSubmit={handleNameSubmit} />}
       <div className={styles.quadrantGrid}>
 
         {/* Section 1: 현재 사용 도구 */}
@@ -166,7 +282,9 @@ export default function DashboardPage() {
               <div className={styles.slackContent}>
                 <p className={styles.sectionDesc}>m4_current 이모지가 달린 메시지</p>
                 {items.current.length > 0
-                  ? items.current.map(item => <SlackCard key={item.id} item={item} accentColor="#3182ce" />)
+                  ? items.current.map(item => (
+                      <SlackCard key={item.id} item={item} accentColor="#3182ce" userName={userName} onVote={handleVote} />
+                    ))
                   : <div className={styles.emptyState}><p>수집된 데이터가 없습니다</p></div>}
               </div>
             </section>

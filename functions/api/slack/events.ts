@@ -18,6 +18,7 @@ interface SlackItem {
   createdAt: string;
   status: 'current' | 'archived' | 'stopped';
   permalink: string;
+  votes: Record<string, boolean>; // { "이름1": true, "이름2": true }
 }
 
 const COLLECTION = 'slack_items';
@@ -111,12 +112,20 @@ function toFields(item: SlackItem): Record<string, any> {
     author:    { stringValue: item.author },
     createdAt: { stringValue: item.createdAt },
     status:    { stringValue: item.status },
-    permalink: { stringValue: item.permalink }
+    permalink: { stringValue: item.permalink },
+    votes: {
+      mapValue: {
+        fields: Object.fromEntries(
+          Object.entries(item.votes ?? {}).map(([k, v]) => [k, { booleanValue: v }])
+        )
+      }
+    }
   };
 }
 
 function fromDoc(doc: any): SlackItem {
   const f = doc.fields;
+  const voteFields = f.votes?.mapValue?.fields ?? {};
   return {
     id:        f.id?.stringValue        ?? '',
     channel:   f.channel?.stringValue   ?? '',
@@ -125,7 +134,10 @@ function fromDoc(doc: any): SlackItem {
     author:    f.author?.stringValue    ?? '',
     createdAt: f.createdAt?.stringValue ?? '',
     status:    (f.status?.stringValue   ?? 'current') as SlackItem['status'],
-    permalink: f.permalink?.stringValue ?? ''
+    permalink: f.permalink?.stringValue ?? '',
+    votes: Object.fromEntries(
+      Object.entries(voteFields).map(([k, v]: [string, any]) => [k, v.booleanValue ?? true])
+    )
   };
 }
 
@@ -373,7 +385,8 @@ async function handleReactionEvent(event: any, env: Env): Promise<void> {
         author:    msgData.user,
         createdAt: new Date().toISOString(),
         status,
-        permalink: msgData.permalink
+        permalink: msgData.permalink,
+        votes:     {}
       });
       console.log(`[Slack] Collected new message: ${id} → ${status}`);
     } else {
