@@ -265,10 +265,20 @@ async function fetchUserName(userId: string, token: string): Promise<string> {
       console.warn(`[DEBUG][fetchUserName] users.info failed for userId=${userId}:`, data.error);
       return userId;
     }
-    // display_name (프로필 설정 이름) → real_name → name → userId 순으로 폴백
-    const profile = data.user?.profile;
-    const name = profile?.display_name || data.user?.real_name || data.user?.name || userId;
-    console.log(`[DEBUG][fetchUserName] userId=${userId} → display_name="${profile?.display_name}" real_name="${data.user?.real_name}" → using="${name}"`);
+
+    const profile = data.user?.profile ?? {};
+
+    // display_name → display_name_normalized → real_name → real_name_normalized → name → userId
+    // trim()으로 공백만 있는 경우를 빈 문자열로 처리
+    const displayName     = (profile.display_name            ?? '').trim();
+    const displayNameNorm = (profile.display_name_normalized ?? '').trim();
+    const realName        = (profile.real_name               ?? data.user?.real_name ?? '').trim();
+    const realNameNorm    = (profile.real_name_normalized    ?? '').trim();
+    const fallbackName    = (data.user?.name                 ?? '').trim();
+
+    const name = displayName || displayNameNorm || realName || realNameNorm || fallbackName || userId;
+
+    console.log(`[DEBUG][fetchUserName] userId=${userId} → display_name="${displayName}" real_name="${realName}" → using="${name}"`);
     return name;
   } catch (e) {
     console.error('[DEBUG][fetchUserName] Error:', e);
