@@ -148,14 +148,18 @@ const CurrentRow = ({
               onClick={() => userName && onVote?.(item.id)}
               disabled={!userName}
             >
-              <span>🧊</span>
+              {voteCount > 0 && (
+                <span className={`${styles.notNowEmojis} ${hasVoted ? styles.notNowEmojisActive : ''}`}>
+                  {'🙋'.repeat(Math.min(voteCount, 3))}
+                </span>
+              )}
+              {voteCount >= 4 && <span className={styles.notNowCount}>{voteCount}</span>}
               <span>Not Now</span>
             </button>
             {showVoters && voterNames.length > 0 && (
               <div className={styles.voteTooltip}>{voterNames.join(', ')}</div>
             )}
           </div>
-          {voteCount > 0 && <span className={styles.inlineVoteCount}>{voteCount}</span>}
         </div>
         <span className={styles.rowToggle}>{expanded ? '▲' : '▼'}</span>
       </div>

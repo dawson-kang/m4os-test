@@ -350,18 +350,19 @@
 
 .notNowBtn {
   display: inline-flex;
-  flex-direction: column;
+  flex-direction: row;
   align-items: center;
   padding: 0.2rem 0.45rem;
   font-size: 0.6rem;
   font-weight: 600;
   line-height: 1.3;
-  gap: 0.05rem;
+  gap: 0.2rem;
   border: 1px solid #e2e8f0;
   border-radius: 6px;
   background: white;
   color: #718096;
   cursor: pointer;
+  white-space: nowrap;
   transition: background 0.15s, color 0.15s, border-color 0.15s;
 }
 
@@ -382,11 +383,22 @@
   opacity: 0.6;
 }
 
-.inlineVoteCount {
-  font-size: 0.68rem;
+.notNowEmojis {
+  font-size: 0.72rem;
+  letter-spacing: -0.05em;
+  opacity: 0.5;
+  transition: opacity 0.15s, filter 0.15s;
+}
+
+.notNowEmojisActive {
+  opacity: 1;
+  filter: drop-shadow(0 0 3px rgba(49, 130, 206, 0.55));
+}
+
+.notNowCount {
+  font-size: 0.6rem;
   font-weight: 700;
-  color: #3182ce;
-  flex-shrink: 0;
+  color: inherit;
 }
 
 .voteTooltip {
