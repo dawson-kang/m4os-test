@@ -176,6 +176,11 @@ function deterministicSummarize(currentItems: SlackItem[]): AISummary {
 
 const truncate = (text: string) => text.length > 50 ? text.slice(0, 50) + '…' : text;
 
+// current 메시지 목록의 변경 감지용 시그니처 (id + status 조합, 순서 무관)
+function makeCurrentSignature(currentItems: SlackItem[]): string {
+  return currentItems.map(i => `${i.id}:${i.status}`).sort().join('|');
+}
+
 function formatSyncTime(date: Date): string {
   return date.toLocaleString('ko-KR', {
     month: 'long',
@@ -192,9 +197,10 @@ export default function DashboardPage() {
 
   const [items, setItems] = useState<{ current: SlackItem[]; archived: SlackItem[] }>({ current: [], archived: [] });
 
-  const [aiSummary, setAiSummary]         = useState<AISummary | null>(null);
-  const [aiUpdatedAt, setAiUpdatedAt]     = useState<string | null>(null);
-  const [isSummarizing, setIsSummarizing] = useState(false);
+  const [aiSummary, setAiSummary]           = useState<AISummary | null>(null);
+  const [aiUpdatedAt, setAiUpdatedAt]       = useState<string | null>(null);
+  const [aiBaseSignature, setAiBaseSignature] = useState<string | null>(null);
+  const [isSummarizing, setIsSummarizing]   = useState(false);
 
   // 인증 체크
   useEffect(() => {
@@ -213,6 +219,8 @@ export default function DashboardPage() {
       if (summaryData?.summary) {
         setAiSummary(summaryData.summary);
         setAiUpdatedAt(summaryData.updatedAt);
+        // AI 요약 시점의 current 목록을 기준선으로 저장
+        setAiBaseSignature(makeCurrentSignature(eventsData.current ?? []));
       }
     };
     init();
@@ -242,6 +250,8 @@ export default function DashboardPage() {
       if (data.summary) {
         setAiSummary(data.summary);
         setAiUpdatedAt(data.updatedAt);
+        // 요약 완료 시점의 current 목록을 새 기준선으로 저장
+        setAiBaseSignature(makeCurrentSignature(items.current));
       }
     } catch (e) {
       console.error('Summarize error:', e);
@@ -284,12 +294,11 @@ export default function DashboardPage() {
   const displaySummary       = aiSummary ?? deterministicSummary;
   const isAiGenerated        = aiSummary !== null;
 
-  // AI 요약이 현재 데이터보다 오래됐는지 확인
+  // AI 요약 기준선과 현재 current 목록이 다르면 미반영
   const isAiOutdated = useMemo(() => {
-    if (!aiUpdatedAt || items.current.length === 0) return false;
-    const aiTime = new Date(aiUpdatedAt).getTime();
-    return items.current.some(item => new Date(item.createdAt).getTime() > aiTime);
-  }, [items.current, aiUpdatedAt]);
+    if (!isAiGenerated || aiBaseSignature === null) return false;
+    return makeCurrentSignature(items.current) !== aiBaseSignature;
+  }, [items.current, isAiGenerated, aiBaseSignature]);
 
   if (loading || !user) return null;
 
