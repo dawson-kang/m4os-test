@@ -72,6 +72,88 @@
   font-weight: 600;
 }
 
+/* Manual Update Controls */
+.statusControls {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.updateBtn {
+  padding: 0.22rem 0.6rem;
+  font-size: 0.68rem;
+  font-weight: 600;
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  cursor: pointer;
+  color: #4a5568;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.updateBtn:hover:not(:disabled) {
+  background: #ebf8ff;
+  border-color: #bee3f8;
+  color: #3182ce;
+}
+
+.updateBtn:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+/* AI Summary Header */
+.aiHeaderRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.aiHeaderRow h2 {
+  font-size: 0.9375rem;
+  font-weight: 700;
+  margin: 0;
+}
+
+.aiActionRow {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.aiOutdated {
+  font-size: 0.65rem;
+  font-weight: 600;
+  color: #e53e3e;
+  white-space: nowrap;
+}
+
+.summarizeBtn {
+  padding: 0.22rem 0.6rem;
+  font-size: 0.68rem;
+  font-weight: 600;
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  cursor: pointer;
+  color: #4a5568;
+  white-space: nowrap;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.summarizeBtn:hover:not(:disabled) {
+  background: #f0fff4;
+  border-color: #9ae6b4;
+  color: #276749;
+}
+
+.summarizeBtn:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
 .connected    { color: #38a169; }
 .disconnected { color: #e53e3e; }
 

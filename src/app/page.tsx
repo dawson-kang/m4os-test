@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import styles from './page.module.css';
 import { SlackItem, SlackItemStatus, AISummary } from '@/types/slack';
@@ -171,21 +171,106 @@ function deterministicSummarize(currentItems: SlackItem[]): AISummary {
   return { coreStandards, inventoryStandards, orderStandards, changes, conflicts: [], others, sourceCount: sorted.length };
 }
 
+function dataSignature(data: { current: SlackItem[]; archived: SlackItem[] }) {
+  return [...data.current, ...data.archived]
+    .map(i => i.id + '|' + Object.keys(i.votes ?? {}).sort().join(','))
+    .sort()
+    .join('||');
+}
+
 const truncate = (text: string) => text.length > 50 ? text.slice(0, 50) + '…' : text;
 
 export default function DashboardPage() {
   const { user, loading } = useAuth();
   const router = useRouter();
-  const [items, setItems] = useState<{ current: SlackItem[]; archived: SlackItem[] }>({ current: [], archived: [] });
-  const [lastSync, setLastSync] = useState<Date>(new Date());
 
+  const [items, setItems]           = useState<{ current: SlackItem[]; archived: SlackItem[] }>({ current: [], archived: [] });
+  const [lastSync, setLastSync]     = useState<Date | null>(null);
+  const [hasNewData, setHasNewData] = useState(false);
+  const [isUpdating, setIsUpdating] = useState(false);
+
+  const [aiSummary, setAiSummary]       = useState<AISummary | null>(null);
+  const [aiUpdatedAt, setAiUpdatedAt]   = useState<string | null>(null);
+  const [isSummarizing, setIsSummarizing] = useState(false);
+
+  // 배경 체크에서 현재 items를 stale closure 없이 참조
+  const itemsRef      = useRef(items);
+  const lastSyncRef   = useRef(lastSync);
+  useEffect(() => { itemsRef.current    = items;    }, [items]);
+  useEffect(() => { lastSyncRef.current = lastSync; }, [lastSync]);
+
+  // 인증 체크
   useEffect(() => {
-    if (!loading && !user) {
-      router.push('/login');
-    }
+    if (!loading && !user) router.push('/login');
   }, [user, loading, router]);
 
+  // 초기 데이터 로드
+  useEffect(() => {
+    if (!user) return;
+    const init = async () => {
+      const [eventsData, summaryData] = await Promise.all([
+        fetch('/api/slack/events').then(r => r.json()).catch(() => ({ current: [], archived: [] })),
+        fetch('/api/summarize').then(r => r.json()).catch(() => null),
+      ]);
+      setItems(eventsData);
+      setLastSync(new Date());
+      if (summaryData?.summary) {
+        setAiSummary(summaryData.summary);
+        setAiUpdatedAt(summaryData.updatedAt);
+      }
+    };
+    init();
+  }, [user]);
+
+  // 변경 감지: 30초마다 /api/slack/status의 lastModified를 확인
+  useEffect(() => {
+    if (!user) return;
+    const check = async () => {
+      try {
+        const { lastModified } = await fetch('/api/slack/status').then(r => r.json());
+        if (!lastModified || !lastSyncRef.current) return;
+        if (new Date(lastModified) > lastSyncRef.current) {
+          setHasNewData(true);
+        }
+      } catch { /* 무시 */ }
+    };
+    const interval = setInterval(check, 30_000);
+    return () => clearInterval(interval);
+  }, [user]);
+
   const userName = user?.displayName ?? user?.email?.split('@')[0] ?? null;
+
+  // 수동 업데이트
+  const handleUpdate = async () => {
+    setIsUpdating(true);
+    try {
+      const data = await fetch('/api/slack/events').then(r => r.json());
+      setItems(data);
+      setLastSync(new Date());
+      setHasNewData(false);
+    } catch (e) {
+      console.error('Update error:', e);
+    } finally {
+      setIsUpdating(false);
+    }
+  };
+
+  // AI 요약 업데이트
+  const handleAISummarize = async () => {
+    setIsSummarizing(true);
+    try {
+      const res  = await fetch('/api/summarize', { method: 'POST' });
+      const data = await res.json();
+      if (data.summary) {
+        setAiSummary(data.summary);
+        setAiUpdatedAt(data.updatedAt);
+      }
+    } catch (e) {
+      console.error('Summarize error:', e);
+    } finally {
+      setIsSummarizing(false);
+    }
+  };
 
   const handleVote = async (itemId: string) => {
     if (!userName) return;
@@ -194,11 +279,7 @@ export default function DashboardPage() {
       const toggleVotes = (arr: SlackItem[]) => arr.map(item => {
         if (item.id !== itemId) return item;
         const votes = { ...(item.votes ?? {}) };
-        if (votes[userName]) {
-          delete votes[userName];
-        } else {
-          votes[userName] = true;
-        }
+        if (votes[userName]) { delete votes[userName]; } else { votes[userName] = true; }
         return { ...item, votes };
       });
       return { current: toggleVotes(prev.current), archived: toggleVotes(prev.archived) };
@@ -215,24 +296,16 @@ export default function DashboardPage() {
     }
   };
 
-  useEffect(() => {
-    const fetchState = async () => {
-      try {
-        const res  = await fetch('/api/slack/events');
-        const data = await res.json();
-        setItems(data);
-        setLastSync(new Date());
-      } catch (e) {
-        console.error('Polling Error:', e);
-      }
-    };
+  const deterministicSummary = useMemo(() => deterministicSummarize(items.current), [items.current]);
+  const displaySummary       = aiSummary ?? deterministicSummary;
+  const isAiGenerated        = aiSummary !== null;
 
-    fetchState();
-    const interval = setInterval(fetchState, 5000);
-    return () => clearInterval(interval);
-  }, []);
-
-  const aiSummary = useMemo(() => deterministicSummarize(items.current), [items.current]);
+  // AI 요약이 현재 데이터보다 오래됐는지 확인
+  const isAiOutdated = useMemo(() => {
+    if (!aiUpdatedAt || items.current.length === 0) return false;
+    const aiTime = new Date(aiUpdatedAt).getTime();
+    return items.current.some(item => new Date(item.createdAt).getTime() > aiTime);
+  }, [items.current, aiUpdatedAt]);
 
   if (loading || !user) return null;
 
@@ -269,13 +342,21 @@ export default function DashboardPage() {
         <div className={styles.systemGroup}>
           <div className={styles.systemHeader}>
             <div className={styles.systemLabel}>자동 기준 정리 시스템</div>
-            <div
-              className={styles.systemStatus}
-              style={{ color: (items.current.length + items.archived.length) > 0 ? '#38a169' : '#e53e3e' }}
-            >
-              {(items.current.length + items.archived.length) > 0
-                ? `● 연결됨 (업데이트: ${lastSync.toLocaleTimeString()})`
-                : '● 수집 대기 중'}
+            <div className={styles.statusControls}>
+              <div className={styles.systemStatus} style={{ color: hasNewData ? '#e53e3e' : '#38a169' }}>
+                {hasNewData
+                  ? '🔴 반영 안됨'
+                  : lastSync
+                    ? `🟢 연결됨 (${lastSync.toLocaleTimeString()})`
+                    : '● 연결 중...'}
+              </div>
+              <button
+                className={styles.updateBtn}
+                onClick={handleUpdate}
+                disabled={isUpdating}
+              >
+                {isUpdating ? '업데이트 중...' : '업데이트'}
+              </button>
             </div>
           </div>
 
@@ -300,25 +381,43 @@ export default function DashboardPage() {
 
             {/* Section 4: AI 자동 요약 */}
             <section className={`${styles.quadrant} ${styles.connectedQuadrant} ${styles.borderBlue}`}>
-              <div className={styles.sectionHeader}><h2>AI 자동 요약</h2></div>
+              <div className={styles.sectionHeader}>
+                <div className={styles.aiHeaderRow}>
+                  <h2>AI 자동 요약</h2>
+                  <div className={styles.aiActionRow}>
+                    {isAiOutdated && <span className={styles.aiOutdated}>🔴 AI 요약 미반영</span>}
+                    <button
+                      className={styles.summarizeBtn}
+                      onClick={handleAISummarize}
+                      disabled={isSummarizing || items.current.length === 0}
+                    >
+                      {isSummarizing ? '요약 중...' : '🤖 AI 요약 업데이트'}
+                    </button>
+                  </div>
+                </div>
+              </div>
               <div className={styles.aiContent}>
                 {items.current.length > 0 ? (
                   <>
                     <div className={styles.summaryBox}>
                       {SUMMARY_CATEGORIES
-                        .filter(cat => (aiSummary[cat.key] as string[]).length > 0)
+                        .filter(cat => (displaySummary[cat.key] as string[]).length > 0)
                         .map(cat => (
                           <div key={cat.key} className={styles.summarySection}>
                             <h4 style={{ color: cat.color }}>{cat.label}</h4>
                             <ul>
-                              {(aiSummary[cat.key] as string[]).map((text, i) => (
+                              {(displaySummary[cat.key] as string[]).map((text, i) => (
                                 <li key={i}>{truncate(text)}</li>
                               ))}
                             </ul>
                           </div>
                         ))}
                     </div>
-                    <div className={styles.sourceTag}>데이터 출처: Slack ({aiSummary.sourceCount}건)</div>
+                    <div className={styles.sourceTag}>
+                      {isAiGenerated
+                        ? `AI 요약 (${displaySummary.sourceCount}건 기준)`
+                        : `자동 분류 (${displaySummary.sourceCount}건) · AI 요약 미생성`}
+                    </div>
                   </>
                 ) : <div className={styles.emptyState}><p>요약할 데이터가 없습니다</p></div>}
               </div>

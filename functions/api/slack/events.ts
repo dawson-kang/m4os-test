@@ -172,6 +172,15 @@ async function firestoreUpsert(projectId: string, token: string, item: SlackItem
   console.log(`[DEBUG][firestore] UPSERTED id=${item.id} status=${item.status}`);
 }
 
+async function updateSyncMetadata(projectId: string, token: string): Promise<void> {
+  const url = `https://firestore.googleapis.com/v1/projects/${projectId}/databases/(default)/documents/metadata/sync_status`;
+  await fetch(url, {
+    method: 'PATCH',
+    headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ fields: { lastModified: { stringValue: new Date().toISOString() } } })
+  });
+}
+
 async function firestoreDelete(projectId: string, token: string, id: string): Promise<void> {
   const res = await fetch(docUrl(projectId, id), {
     method: 'DELETE',
@@ -363,6 +372,7 @@ async function handleReactionEvent(event: any, env: Env): Promise<void> {
   // [3] 관련 이모지가 없으면 Firestore 문서 삭제
   if (status === null) {
     await firestoreDelete(env.FIREBASE_PROJECT_ID, token, id);
+    await updateSyncMetadata(env.FIREBASE_PROJECT_ID, token);
     return;
   }
 
@@ -372,6 +382,7 @@ async function handleReactionEvent(event: any, env: Env): Promise<void> {
     // [4] 기존 문서 status 업데이트
     existing.status = status;
     await firestoreUpsert(env.FIREBASE_PROJECT_ID, token, existing);
+    await updateSyncMetadata(env.FIREBASE_PROJECT_ID, token);
     console.log(`[Slack] Updated ${id} → ${status}`);
   } else if (status !== 'stopped') {
     // [5] 신규 문서 생성 (m4_delete 단독이면 저장 불필요)
@@ -388,6 +399,7 @@ async function handleReactionEvent(event: any, env: Env): Promise<void> {
         permalink: msgData.permalink,
         votes:     {}
       });
+      await updateSyncMetadata(env.FIREBASE_PROJECT_ID, token);
       console.log(`[Slack] Collected new message: ${id} → ${status}`);
     } else {
       console.error(`[DEBUG][handleReactionEvent] Message fetch FAILED for id="${id}" — item NOT stored`);
