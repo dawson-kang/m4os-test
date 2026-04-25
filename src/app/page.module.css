@@ -267,6 +267,20 @@
 }
 
 /* Shared row elements */
+.rowIndex {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: #a0aec0;
+  flex-shrink: 0;
+  min-width: 1.2rem;
+}
+
+.itemCount {
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: #718096;
+}
+
 .rowPreview {
   font-weight: 600;
   color: #2d3748;

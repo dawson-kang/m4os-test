@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useMemo, useRef } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import styles from './page.module.css';
 import { SlackItem, SlackItemStatus, AISummary } from '@/types/slack';
@@ -78,10 +78,12 @@ const ArchiveRow = ({ item }: { item: SlackItem }) => {
 
 const CurrentRow = ({
   item,
+  index,
   userName,
   onVote,
 }: {
   item: SlackItem;
+  index: number;
   userName?: string | null;
   onVote?: (itemId: string) => void;
 }) => {
@@ -100,6 +102,7 @@ const CurrentRow = ({
   return (
     <div className={styles.currentRow}>
       <div className={styles.currentRowHeader} onClick={() => setExpanded(e => !e)}>
+        <span className={styles.rowIndex}>{index}.</span>
         <span className={styles.rowPreview}>{preview}{needsEllipsis ? '…' : ''}</span>
         <span className={styles.rowSep}>|</span>
         <span className={styles.rowUser}>@{item.author}</span>
@@ -171,13 +174,6 @@ function deterministicSummarize(currentItems: SlackItem[]): AISummary {
   return { coreStandards, inventoryStandards, orderStandards, changes, conflicts: [], others, sourceCount: sorted.length };
 }
 
-function dataSignature(data: { current: SlackItem[]; archived: SlackItem[] }) {
-  return [...data.current, ...data.archived]
-    .map(i => i.id + '|' + Object.keys(i.votes ?? {}).sort().join(','))
-    .sort()
-    .join('||');
-}
-
 const truncate = (text: string) => text.length > 50 ? text.slice(0, 50) + '…' : text;
 
 function formatSyncTime(date: Date): string {
@@ -194,27 +190,18 @@ export default function DashboardPage() {
   const { user, loading } = useAuth();
   const router = useRouter();
 
-  const [items, setItems]           = useState<{ current: SlackItem[]; archived: SlackItem[] }>({ current: [], archived: [] });
-  const [lastSync, setLastSync]     = useState<Date | null>(null);
-  const [hasNewData, setHasNewData] = useState(false);
-  const [isUpdating, setIsUpdating] = useState(false);
+  const [items, setItems] = useState<{ current: SlackItem[]; archived: SlackItem[] }>({ current: [], archived: [] });
 
-  const [aiSummary, setAiSummary]       = useState<AISummary | null>(null);
-  const [aiUpdatedAt, setAiUpdatedAt]   = useState<string | null>(null);
+  const [aiSummary, setAiSummary]         = useState<AISummary | null>(null);
+  const [aiUpdatedAt, setAiUpdatedAt]     = useState<string | null>(null);
   const [isSummarizing, setIsSummarizing] = useState(false);
-
-  // 배경 체크에서 현재 items를 stale closure 없이 참조
-  const itemsRef      = useRef(items);
-  const lastSyncRef   = useRef(lastSync);
-  useEffect(() => { itemsRef.current    = items;    }, [items]);
-  useEffect(() => { lastSyncRef.current = lastSync; }, [lastSync]);
 
   // 인증 체크
   useEffect(() => {
     if (!loading && !user) router.push('/login');
   }, [user, loading, router]);
 
-  // 초기 데이터 로드
+  // 초기 데이터 로드 (AI 요약 포함)
   useEffect(() => {
     if (!user) return;
     const init = async () => {
@@ -223,7 +210,6 @@ export default function DashboardPage() {
         fetch('/api/summarize').then(r => r.json()).catch(() => null),
       ]);
       setItems(eventsData);
-      setLastSync(new Date());
       if (summaryData?.summary) {
         setAiSummary(summaryData.summary);
         setAiUpdatedAt(summaryData.updatedAt);
@@ -232,38 +218,20 @@ export default function DashboardPage() {
     init();
   }, [user]);
 
-  // 변경 감지: 30초마다 /api/slack/status의 lastModified를 확인
+  // 5초 자동 폴링
   useEffect(() => {
     if (!user) return;
-    const check = async () => {
+    const poll = async () => {
       try {
-        const { lastModified } = await fetch('/api/slack/status').then(r => r.json());
-        if (!lastModified || !lastSyncRef.current) return;
-        if (new Date(lastModified) > lastSyncRef.current) {
-          setHasNewData(true);
-        }
+        const data = await fetch('/api/slack/events').then(r => r.json());
+        setItems(data);
       } catch { /* 무시 */ }
     };
-    const interval = setInterval(check, 30_000);
+    const interval = setInterval(poll, 5_000);
     return () => clearInterval(interval);
   }, [user]);
 
   const userName = user?.displayName ?? user?.email?.split('@')[0] ?? null;
-
-  // 수동 업데이트
-  const handleUpdate = async () => {
-    setIsUpdating(true);
-    try {
-      const data = await fetch('/api/slack/events').then(r => r.json());
-      setItems(data);
-      setLastSync(new Date());
-      setHasNewData(false);
-    } catch (e) {
-      console.error('Update error:', e);
-    } finally {
-      setIsUpdating(false);
-    }
-  };
 
   // AI 요약 업데이트
   const handleAISummarize = async () => {
@@ -305,6 +273,12 @@ export default function DashboardPage() {
       console.error('Vote error:', e);
     }
   };
+
+  // 최신순 정렬 (1번이 가장 최신)
+  const sortedCurrent = useMemo(
+    () => [...items.current].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()),
+    [items.current]
+  );
 
   const deterministicSummary = useMemo(() => deterministicSummarize(items.current), [items.current]);
   const displaySummary       = aiSummary ?? deterministicSummary;
@@ -360,25 +334,16 @@ export default function DashboardPage() {
               <div className={styles.sectionHeader}>
                 <div className={styles.aiHeaderRow}>
                   <h2>현재 기준 (실시간 수집)</h2>
-                  <div className={styles.aiActionRow}>
-                    {hasNewData
-                      ? <span className={styles.aiOutdated}>🔴 반영 안됨</span>
-                      : lastSync && <span className={styles.statusSynced}>🟢 반영됨 | {formatSyncTime(lastSync)}</span>}
-                    <button
-                      className={styles.updateBtn}
-                      onClick={handleUpdate}
-                      disabled={isUpdating}
-                    >
-                      {isUpdating ? '업데이트 중...' : '💬 슬랙 이모지 업데이트'}
-                    </button>
-                  </div>
+                  {items.current.length > 0 && (
+                    <span className={styles.itemCount}>총 {items.current.length}건</span>
+                  )}
                 </div>
               </div>
               <div className={styles.slackContent}>
                 <p className={styles.sectionDesc}>m4_current 이모지가 달린 메시지</p>
-                {items.current.length > 0
-                  ? items.current.map(item => (
-                      <CurrentRow key={item.id} item={item} userName={userName} onVote={handleVote} />
+                {sortedCurrent.length > 0
+                  ? sortedCurrent.map((item, idx) => (
+                      <CurrentRow key={item.id} item={item} index={idx + 1} userName={userName} onVote={handleVote} />
                     ))
                   : <div className={styles.emptyState}><p>수집된 데이터가 없습니다</p></div>}
               </div>
