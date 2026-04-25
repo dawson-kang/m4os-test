@@ -180,6 +180,16 @@ function dataSignature(data: { current: SlackItem[]; archived: SlackItem[] }) {
 
 const truncate = (text: string) => text.length > 50 ? text.slice(0, 50) + '…' : text;
 
+function formatSyncTime(date: Date): string {
+  return date.toLocaleString('ko-KR', {
+    month: 'long',
+    day: 'numeric',
+    hour: 'numeric',
+    minute: '2-digit',
+    hour12: true,
+  }) + ' 기준';
+}
+
 export default function DashboardPage() {
   const { user, loading } = useAuth();
   const router = useRouter();
@@ -342,28 +352,28 @@ export default function DashboardPage() {
         <div className={styles.systemGroup}>
           <div className={styles.systemHeader}>
             <div className={styles.systemLabel}>자동 기준 정리 시스템</div>
-            <div className={styles.statusControls}>
-              <div className={styles.systemStatus} style={{ color: hasNewData ? '#e53e3e' : '#38a169' }}>
-                {hasNewData
-                  ? '🔴 반영 안됨'
-                  : lastSync
-                    ? `🟢 연결됨 (${lastSync.toLocaleTimeString()})`
-                    : '● 연결 중...'}
-              </div>
-              <button
-                className={styles.updateBtn}
-                onClick={handleUpdate}
-                disabled={isUpdating}
-              >
-                {isUpdating ? '업데이트 중...' : '업데이트'}
-              </button>
-            </div>
           </div>
 
           <div className={styles.systemContent}>
             {/* Section 3: 현재 기준 */}
             <section className={`${styles.quadrant} ${styles.connectedQuadrant} ${styles.borderBlue}`}>
-              <div className={styles.sectionHeader}><h2>현재 기준 (실시간 수집)</h2></div>
+              <div className={styles.sectionHeader}>
+                <div className={styles.aiHeaderRow}>
+                  <h2>현재 기준 (실시간 수집)</h2>
+                  <div className={styles.aiActionRow}>
+                    {hasNewData
+                      ? <span className={styles.aiOutdated}>🔴 반영 안됨</span>
+                      : lastSync && <span className={styles.statusSynced}>🟢 반영됨 | {formatSyncTime(lastSync)}</span>}
+                    <button
+                      className={styles.updateBtn}
+                      onClick={handleUpdate}
+                      disabled={isUpdating}
+                    >
+                      {isUpdating ? '업데이트 중...' : '💬 슬랙 이모지 업데이트'}
+                    </button>
+                  </div>
+                </div>
+              </div>
               <div className={styles.slackContent}>
                 <p className={styles.sectionDesc}>m4_current 이모지가 달린 메시지</p>
                 {items.current.length > 0
@@ -385,7 +395,11 @@ export default function DashboardPage() {
                 <div className={styles.aiHeaderRow}>
                   <h2>AI 자동 요약</h2>
                   <div className={styles.aiActionRow}>
-                    {isAiOutdated && <span className={styles.aiOutdated}>🔴 AI 요약 미반영</span>}
+                    {isAiOutdated
+                      ? <span className={styles.aiOutdated}>🔴 AI 요약 미반영</span>
+                      : isAiGenerated && aiUpdatedAt && (
+                          <span className={styles.statusSynced}>🟢 AI 요약 반영됨 | {formatSyncTime(new Date(aiUpdatedAt))}</span>
+                        )}
                     <button
                       className={styles.summarizeBtn}
                       onClick={handleAISummarize}

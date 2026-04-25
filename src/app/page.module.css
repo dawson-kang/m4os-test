@@ -130,6 +130,13 @@
   white-space: nowrap;
 }
 
+.statusSynced {
+  font-size: 0.65rem;
+  font-weight: 600;
+  color: #38a169;
+  white-space: nowrap;
+}
+
 .summarizeBtn {
   padding: 0.22rem 0.6rem;
   font-size: 0.68rem;
