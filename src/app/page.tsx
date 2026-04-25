@@ -1,40 +1,10 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
+import { useRouter } from 'next/navigation';
 import styles from './page.module.css';
 import { SlackItem, SlackItemStatus, AISummary } from '@/types/slack';
-
-// TODO: 로그인 기능 추가 후 localStorage 기반 임시 이름 로직을 교체 예정
-const USER_NAME_KEY = 'm4os_user_name';
-
-const NameInputModal = ({ onSubmit }: { onSubmit: (name: string) => void }) => {
-  const [value, setValue] = useState('');
-  const trimmed = value.trim();
-  return (
-    <div className={styles.modalOverlay}>
-      <div className={styles.modal}>
-        <h2>이름을 입력해주세요</h2>
-        <p>투표 기능 사용을 위해 이름이 필요합니다.</p>
-        <input
-          type="text"
-          className={styles.modalInput}
-          value={value}
-          onChange={e => setValue(e.target.value)}
-          onKeyDown={e => e.key === 'Enter' && trimmed && onSubmit(trimmed)}
-          placeholder="이름 입력"
-          autoFocus
-        />
-        <button
-          className={styles.modalBtn}
-          onClick={() => trimmed && onSubmit(trimmed)}
-          disabled={!trimmed}
-        >
-          확인
-        </button>
-      </div>
-    </div>
-  );
-};
+import { useAuth } from '@/lib/AuthContext';
 
 const TOOLS = [
   { name: 'SCM', url: 'https://m4.sandbox.plott.co.kr/' },
@@ -204,31 +174,22 @@ function deterministicSummarize(currentItems: SlackItem[]): AISummary {
 const truncate = (text: string) => text.length > 50 ? text.slice(0, 50) + '…' : text;
 
 export default function DashboardPage() {
+  const { user, loading } = useAuth();
+  const router = useRouter();
   const [items, setItems] = useState<{ current: SlackItem[]; archived: SlackItem[] }>({ current: [], archived: [] });
   const [lastSync, setLastSync] = useState<Date>(new Date());
-  // TODO: 로그인 기능 추가 후 아래 localStorage 기반 userName 로직 교체 예정
-  const [userName, setUserName] = useState<string | null>(null);
-  const [showNameModal, setShowNameModal] = useState(false);
 
   useEffect(() => {
-    const stored = localStorage.getItem(USER_NAME_KEY);
-    if (stored) {
-      setUserName(stored);
-    } else {
-      setShowNameModal(true);
+    if (!loading && !user) {
+      router.push('/login');
     }
-  }, []);
+  }, [user, loading, router]);
 
-  const handleNameSubmit = (name: string) => {
-    localStorage.setItem(USER_NAME_KEY, name);
-    setUserName(name);
-    setShowNameModal(false);
-  };
+  const userName = user?.displayName ?? user?.email?.split('@')[0] ?? null;
 
   const handleVote = async (itemId: string) => {
     if (!userName) return;
 
-    // 낙관적 업데이트: 서버 응답 전에 UI 즉시 반영
     setItems(prev => {
       const toggleVotes = (arr: SlackItem[]) => arr.map(item => {
         if (item.id !== itemId) return item;
@@ -273,9 +234,10 @@ export default function DashboardPage() {
 
   const aiSummary = useMemo(() => deterministicSummarize(items.current), [items.current]);
 
+  if (loading || !user) return null;
+
   return (
     <div className={styles.dashboardContainer}>
-      {showNameModal && <NameInputModal onSubmit={handleNameSubmit} />}
       <div className={styles.quadrantGrid}>
 
         {/* Section 1: 현재 사용 도구 */}
