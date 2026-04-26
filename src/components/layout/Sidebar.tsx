@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { signOut } from 'firebase/auth';
@@ -7,9 +8,12 @@ import { getFirebaseAuth } from '@/lib/firebase';
 import { useAuth } from '@/lib/AuthContext';
 import styles from './Sidebar.module.css';
 
+const UNIMPLEMENTED = ['M1 대시보드', 'M2 대시보드', 'M3 대시보드'];
+
 export default function Sidebar() {
   const { user } = useAuth();
   const router = useRouter();
+  const [unimplLabel, setUnimplLabel] = useState<string | null>(null);
 
   const handleLogout = async () => {
     await signOut(getFirebaseAuth());
@@ -34,7 +38,7 @@ export default function Sidebar() {
           <li>
             <Link href="/" className={styles.navLink}>
               <span className={styles.navIcon}>🏠</span>
-              <span className={styles.navText}>대시보드</span>
+              <span className={styles.navText}>M4 대시보드</span>
             </Link>
           </li>
           <li>
@@ -43,6 +47,14 @@ export default function Sidebar() {
               <span className={styles.navText}>개인 Slack 저장 내역</span>
             </Link>
           </li>
+          {UNIMPLEMENTED.map(label => (
+            <li key={label}>
+              <button className={styles.navBtn} onClick={() => setUnimplLabel(label)}>
+                <span className={styles.navIcon}>🔒</span>
+                <span className={styles.navText}>{label}</span>
+              </button>
+            </li>
+          ))}
         </ul>
       </nav>
 
@@ -56,6 +68,16 @@ export default function Sidebar() {
         </div>
         <button className={styles.logoutBtn} onClick={handleLogout}>로그아웃</button>
       </div>
+
+      {unimplLabel && (
+        <div className={styles.unimplOverlay} onClick={() => setUnimplLabel(null)}>
+          <div className={styles.unimplModal} onClick={e => e.stopPropagation()}>
+            <p className={styles.unimplTitle}>{unimplLabel}</p>
+            <p className={styles.unimplMsg}>현재 미구현 기능입니다</p>
+            <button className={styles.unimplClose} onClick={() => setUnimplLabel(null)}>확인</button>
+          </div>
+        </div>
+      )}
     </aside>
   );
 }

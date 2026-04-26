@@ -6,14 +6,21 @@ import styles from './page.module.css';
 import { SlackItem, SlackItemStatus, AISummary } from '@/types/slack';
 import { useAuth } from '@/lib/AuthContext';
 
-const TOOLS = [
-  { name: 'SCM', url: 'https://m4.sandbox.plott.co.kr/' },
+const TOOLS: { name: string; startDate: string; description?: string; url: string }[] = [
   {
-    name: '2026 소모품통합관리',
+    name: 'SCM',
+    startDate: '2026.04.01~',
+    description: '매달 2회 지점별 재고조사 데이터, 발주량 데이터를 통해 주요 사용 품목의 자동 발주량을 산출하기 위한 툴',
+    url: 'https://m4.sandbox.plott.co.kr/',
+  },
+  {
+    name: '2026 소모품 통합 관리 시트',
+    startDate: '2026.01.01~04.30 (사용종료 예상일)',
     url: 'https://docs.google.com/spreadsheets/d/19mHmZcYVCIMJI-teqRPBW8XZYJI4aRf39CPalL60sI8/edit?gid=1993748882#gid=1993748882',
   },
   {
-    name: '2026 구매/발주',
+    name: '2026 구매/발주 시트',
+    startDate: '2026.01.01~ 사용 종료',
     url: 'https://docs.google.com/spreadsheets/d/1Nttiq-90Rv8GPlnPDftTKqtrKIZ3-0SlDrloN4FLzbw/edit?gid=303592076#gid=303592076',
   },
 ];
@@ -394,13 +401,15 @@ export default function DashboardPage() {
     <div className={styles.dashboardContainer}>
       <div className={styles.quadrantGrid}>
 
-        {/* Section 1: 현재 사용 도구 */}
+        {/* Section 1: M4 업무 툴 */}
         <section className={`${styles.quadrant} ${styles.section1}`}>
-          <div className={styles.sectionHeader}><h2>현재 사용 도구</h2></div>
+          <div className={styles.sectionHeader}><h2>M4 업무 툴</h2></div>
           <div className={styles.toolGrid}>
             {TOOLS.map(tool => (
               <div key={tool.name} className={styles.toolCard}>
                 <h3>{tool.name}</h3>
+                <span className={styles.toolDate}>{tool.startDate}</span>
+                {tool.description && <p className={styles.toolDesc}>{tool.description}</p>}
                 <a href={tool.url} target="_blank" rel="noopener noreferrer" className={styles.actionButton}>
                   바로가기
                 </a>

@@ -32,7 +32,7 @@
 .quadrantGrid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  grid-template-rows: 30vh 1fr;
+  grid-template-rows: 25vh 1fr;
   gap: 12px;
   height: calc(100% - 0px);
 }
@@ -384,8 +384,7 @@
   position: relative;
   display: flex;
   flex-direction: column;
-  justify-content: center;
-  gap: 0.3rem;
+  gap: 0.25rem;
   border: 1px solid #edf2f7;
   overflow: hidden;
 }
@@ -399,7 +398,23 @@
   text-overflow: ellipsis;
 }
 
-.toolCard p  { font-size: 0.75rem; color: #718096; margin: 0; }
+.toolDate {
+  font-size: 0.66rem;
+  color: #a0aec0;
+  margin: 0;
+}
+
+.toolDesc {
+  font-size: 0.68rem;
+  color: #718096;
+  margin: 0;
+  line-height: 1.45;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  flex: 1;
+}
 
 .actionButton {
   padding: 0.3rem;
