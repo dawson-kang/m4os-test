@@ -38,18 +38,28 @@ const StatusBadge = ({ status }: { status: SlackItemStatus }) => {
 const ArchiveRow = ({
   item,
   onMove,
+  isNew,
+  onRead,
 }: {
   item: SlackItem;
   onMove?: (itemId: string, targetStatus: 'current' | 'archived') => void;
+  isNew?: boolean;
+  onRead?: () => void;
 }) => {
   const [expanded, setExpanded] = useState(false);
   const flat = item.text.replace(/\n/g, ' ');
   const preview = flat.slice(0, 30);
   const needsEllipsis = flat.length > 30;
 
+  const handleToggle = () => {
+    if (!expanded && isNew) onRead?.();
+    setExpanded(e => !e);
+  };
+
   return (
     <div className={styles.archiveRow}>
-      <div className={styles.archiveRowHeader} onClick={() => setExpanded(e => !e)}>
+      <div className={styles.archiveRowHeader} onClick={handleToggle}>
+        {isNew && <span className={styles.newBadge}>NEW</span>}
         <span className={styles.rowPreview}>{preview}{needsEllipsis ? '…' : ''}</span>
         <span className={styles.rowSep}>|</span>
         <span className={styles.rowUser}>@{item.author}</span>
@@ -93,12 +103,16 @@ const CurrentRow = ({
   userName,
   onVote,
   onMove,
+  isNew,
+  onRead,
 }: {
   item: SlackItem;
   index: number;
   userName?: string | null;
   onVote?: (itemId: string) => void;
   onMove?: (itemId: string, targetStatus: 'current' | 'archived') => void;
+  isNew?: boolean;
+  onRead?: () => void;
 }) => {
   const [expanded, setExpanded] = useState(false);
   const [showVoters, setShowVoters] = useState(false);
@@ -112,10 +126,16 @@ const CurrentRow = ({
   const hasVoted   = userName ? !!votes[userName] : false;
   const voterNames = Object.keys(votes);
 
+  const handleToggle = () => {
+    if (!expanded && isNew) onRead?.();
+    setExpanded(e => !e);
+  };
+
   return (
     <div className={styles.currentRow}>
-      <div className={styles.currentRowHeader} onClick={() => setExpanded(e => !e)}>
+      <div className={styles.currentRowHeader} onClick={handleToggle}>
         <span className={styles.rowIndex}>{index}.</span>
+        {isNew && <span className={styles.newBadge}>NEW</span>}
         <span className={styles.rowPreview}>{preview}{needsEllipsis ? '…' : ''}</span>
         <span className={styles.rowSep}>|</span>
         <span className={styles.rowUser}>@{item.author}</span>
@@ -220,6 +240,15 @@ export default function DashboardPage() {
   const [aiBaseSignature, setAiBaseSignature] = useState<string | null>(null);
   const [isSummarizing, setIsSummarizing]   = useState(false);
   const [showSummaryModal, setShowSummaryModal] = useState(false);
+  const [readIds, setReadIds]               = useState<Set<string>>(new Set());
+
+  // localStorage에서 읽음 목록 로드
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem('read_messages');
+      if (stored) setReadIds(new Set(JSON.parse(stored)));
+    } catch {}
+  }, []);
 
   // 인증 체크
   useEffect(() => {
@@ -277,6 +306,15 @@ export default function DashboardPage() {
     } finally {
       setIsSummarizing(false);
     }
+  };
+
+  const handleRead = (id: string) => {
+    setReadIds(prev => {
+      const next = new Set(prev);
+      next.add(id);
+      try { localStorage.setItem('read_messages', JSON.stringify([...next])); } catch {}
+      return next;
+    });
   };
 
   const handleMove = async (itemId: string, targetStatus: 'current' | 'archived') => {
@@ -376,7 +414,7 @@ export default function DashboardPage() {
           <div className={styles.sectionHeader}><h2>과거 아카이빙</h2></div>
           <div className={styles.archiveContent}>
             {items.archived.length > 0
-              ? items.archived.map(item => <ArchiveRow key={item.id} item={item} onMove={handleMove} />)
+              ? items.archived.map(item => <ArchiveRow key={item.id} item={item} onMove={handleMove} isNew={!readIds.has(item.id)} onRead={() => handleRead(item.id)} />)
               : <div className={styles.emptyState}><p>아카이빙된 데이터가 없습니다</p></div>}
           </div>
         </section>
@@ -402,7 +440,7 @@ export default function DashboardPage() {
                 <p className={styles.sectionDesc}>m4_current 이모지가 달린 메시지</p>
                 {sortedCurrent.length > 0
                   ? sortedCurrent.map((item, idx) => (
-                      <CurrentRow key={item.id} item={item} index={idx + 1} userName={userName} onVote={handleVote} onMove={handleMove} />
+                      <CurrentRow key={item.id} item={item} index={idx + 1} userName={userName} onVote={handleVote} onMove={handleMove} isNew={!readIds.has(item.id)} onRead={() => handleRead(item.id)} />
                     ))
                   : <div className={styles.emptyState}><p>수집된 데이터가 없습니다</p></div>}
               </div>
