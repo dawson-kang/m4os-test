@@ -43,15 +43,21 @@ export default function Sidebar() {
               <span className={styles.navText}>M4 대시보드</span>
             </Link>
           </li>
-          {COMING_SOON.map(({ label, href }) => (
-            <li key={href}>
-              <Link href={href} className={styles.navLinkDim}>
-                <span className={styles.navIcon}>🔒</span>
-                <span className={styles.navText}>{label}</span>
-              </Link>
-            </li>
-          ))}
         </ul>
+
+        <div className={styles.navBottom}>
+          <div className={styles.navDivider} />
+          <ul className={styles.navListSm}>
+            {COMING_SOON.map(({ label, href }) => (
+              <li key={href}>
+                <Link href={href} className={styles.navLinkSm}>
+                  <span className={styles.navIconSm}>🔒</span>
+                  <span>{label}</span>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </div>
       </nav>
 
       <div className={styles.profileSection}>

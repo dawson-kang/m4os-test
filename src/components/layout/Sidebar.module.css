@@ -26,6 +26,8 @@
 
 .nav {
   flex: 1;
+  display: flex;
+  flex-direction: column;
 }
 
 .navList {
@@ -51,23 +53,45 @@
   color: white;
 }
 
-/* Dimmed link for coming-soon pages */
-.navLinkDim {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  padding: 0.75rem 1rem;
-  border-radius: var(--radius);
-  color: #a0aec0;
-  font-size: 0.875rem;
-  transition: all 0.2s;
-  opacity: 0.55;
+/* Coming-soon section pushed to bottom */
+.navBottom {
+  margin-top: auto;
 }
 
-.navLinkDim:hover {
+.navDivider {
+  height: 1px;
+  background: rgba(255, 255, 255, 0.1);
+  margin: 0.75rem 0;
+}
+
+.navListSm {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  list-style: none;
+}
+
+.navLinkSm {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.35rem 1rem;
+  border-radius: var(--radius);
+  color: #718096;
+  font-size: 0.78rem;
+  font-weight: 500;
+  transition: all 0.2s;
+  opacity: 0.65;
+}
+
+.navLinkSm:hover {
   background-color: rgba(255, 255, 255, 0.05);
-  color: white;
+  color: #a0aec0;
   opacity: 1;
+}
+
+.navIconSm {
+  font-size: 0.875rem;
 }
 
 .navIcon {
