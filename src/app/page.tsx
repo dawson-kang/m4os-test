@@ -402,15 +402,21 @@ export default function DashboardPage() {
       <div className={styles.quadrantGrid}>
 
         {/* Section 1: M4 업무 툴 */}
-        <section className={`${styles.quadrant} ${styles.section1}`}>
+        <section className={`${styles.quadrant} ${styles.section1} ${styles.borderPurple}`}>
           <div className={styles.sectionHeader}><h2>M4 업무 툴</h2></div>
-          <div className={styles.toolGrid}>
+          <div className={styles.toolList}>
             {TOOLS.map(tool => (
-              <div key={tool.name} className={styles.toolCard}>
-                <h3>{tool.name}</h3>
-                <span className={styles.toolDate}>{tool.startDate}</span>
-                {tool.description && <p className={styles.toolDesc}>{tool.description}</p>}
-                <a href={tool.url} target="_blank" rel="noopener noreferrer" className={styles.actionButton}>
+              <div key={tool.name} className={styles.toolListItem}>
+                <div className={styles.toolListMain}>
+                  <div className={styles.toolListInfo}>
+                    <span className={styles.toolListName}>{tool.name}</span>
+                    <span className={styles.toolListDate}>{tool.startDate}</span>
+                  </div>
+                  {tool.description && (
+                    <p className={styles.toolListDesc}>{tool.description}</p>
+                  )}
+                </div>
+                <a href={tool.url} target="_blank" rel="noopener noreferrer" className={styles.toolListBtn}>
                   바로가기
                 </a>
               </div>
