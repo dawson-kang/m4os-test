@@ -600,6 +600,29 @@
   cursor: default;
 }
 
+/* Move Button (archive ↔ current) */
+.moveBtn {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.15rem 0.4rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  background: white;
+  color: #718096;
+  cursor: pointer;
+  flex-shrink: 0;
+  line-height: 1;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+
+.moveBtn:hover {
+  background: #ebf8ff;
+  color: #3182ce;
+  border-color: #bee3f8;
+}
+
 /* View-All Button */
 .viewAllBtn {
   padding: 0.22rem 0.6rem;

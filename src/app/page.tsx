@@ -35,7 +35,13 @@ const StatusBadge = ({ status }: { status: SlackItemStatus }) => {
   return <span className={`${styles.statusBadge} ${styles[status]}`}>{labels[status]}</span>;
 };
 
-const ArchiveRow = ({ item }: { item: SlackItem }) => {
+const ArchiveRow = ({
+  item,
+  onMove,
+}: {
+  item: SlackItem;
+  onMove?: (itemId: string, targetStatus: 'current' | 'archived') => void;
+}) => {
   const [expanded, setExpanded] = useState(false);
   const flat = item.text.replace(/\n/g, ' ');
   const preview = flat.slice(0, 30);
@@ -65,6 +71,11 @@ const ArchiveRow = ({ item }: { item: SlackItem }) => {
             </a>
           </>
         )}
+        <button
+          className={styles.moveBtn}
+          title="현재기준으로 복귀"
+          onClick={e => { e.stopPropagation(); onMove?.(item.id, 'current'); }}
+        >←</button>
         <span className={styles.rowToggle}>{expanded ? '▲' : '▼'}</span>
       </div>
       {expanded && (
@@ -81,11 +92,13 @@ const CurrentRow = ({
   index,
   userName,
   onVote,
+  onMove,
 }: {
   item: SlackItem;
   index: number;
   userName?: string | null;
   onVote?: (itemId: string) => void;
+  onMove?: (itemId: string, targetStatus: 'current' | 'archived') => void;
 }) => {
   const [expanded, setExpanded] = useState(false);
   const [showVoters, setShowVoters] = useState(false);
@@ -134,6 +147,11 @@ const CurrentRow = ({
             )}
           </div>
         </div>
+        <button
+          className={styles.moveBtn}
+          title="과거 아카이빙으로 이동"
+          onClick={e => { e.stopPropagation(); onMove?.(item.id, 'archived'); }}
+        >→</button>
         <span className={styles.rowToggle}>{expanded ? '▲' : '▼'}</span>
       </div>
       {expanded && (
@@ -261,6 +279,36 @@ export default function DashboardPage() {
     }
   };
 
+  const handleMove = async (itemId: string, targetStatus: 'current' | 'archived') => {
+    setItems(prev => {
+      if (targetStatus === 'archived') {
+        const item = prev.current.find(i => i.id === itemId);
+        if (!item) return prev;
+        return {
+          current:  prev.current.filter(i => i.id !== itemId),
+          archived: [{ ...item, status: 'archived' as SlackItemStatus }, ...prev.archived],
+        };
+      } else {
+        const item = prev.archived.find(i => i.id === itemId);
+        if (!item) return prev;
+        return {
+          current:  [...prev.current, { ...item, status: 'current' as SlackItemStatus }],
+          archived: prev.archived.filter(i => i.id !== itemId),
+        };
+      }
+    });
+
+    try {
+      await fetch('/api/slack/move', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: itemId, targetStatus }),
+      });
+    } catch (e) {
+      console.error('Move error:', e);
+    }
+  };
+
   const handleVote = async (itemId: string) => {
     if (!userName) return;
 
@@ -328,7 +376,7 @@ export default function DashboardPage() {
           <div className={styles.sectionHeader}><h2>과거 아카이빙</h2></div>
           <div className={styles.archiveContent}>
             {items.archived.length > 0
-              ? items.archived.map(item => <ArchiveRow key={item.id} item={item} />)
+              ? items.archived.map(item => <ArchiveRow key={item.id} item={item} onMove={handleMove} />)
               : <div className={styles.emptyState}><p>아카이빙된 데이터가 없습니다</p></div>}
           </div>
         </section>
@@ -354,7 +402,7 @@ export default function DashboardPage() {
                 <p className={styles.sectionDesc}>m4_current 이모지가 달린 메시지</p>
                 {sortedCurrent.length > 0
                   ? sortedCurrent.map((item, idx) => (
-                      <CurrentRow key={item.id} item={item} index={idx + 1} userName={userName} onVote={handleVote} />
+                      <CurrentRow key={item.id} item={item} index={idx + 1} userName={userName} onVote={handleVote} onMove={handleMove} />
                     ))
                   : <div className={styles.emptyState}><p>수집된 데이터가 없습니다</p></div>}
               </div>
