@@ -431,7 +431,7 @@ export default function DashboardPage() {
         {/* 자동 시스템 영역 */}
         <div className={styles.systemGroup}>
           <div className={styles.systemHeader}>
-            <div className={styles.systemLabel}>자동 기준 정리 시스템</div>
+            <div className={styles.systemLabel}>M4 오늘의 업무 기준</div>
           </div>
 
           <div className={styles.systemContent}>
@@ -439,7 +439,7 @@ export default function DashboardPage() {
             <section className={`${styles.quadrant} ${styles.connectedQuadrant} ${styles.borderBlue}`}>
               <div className={styles.sectionHeader}>
                 <div className={styles.aiHeaderRow}>
-                  <h2>현재 기준 (실시간 수집)</h2>
+                  <h2>✅ 현행 기준</h2>
                   {items.current.length > 0 && (
                     <span className={styles.itemCount}>총 {items.current.length}건</span>
                   )}
