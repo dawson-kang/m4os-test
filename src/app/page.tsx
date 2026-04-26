@@ -201,6 +201,7 @@ export default function DashboardPage() {
   const [aiUpdatedAt, setAiUpdatedAt]       = useState<string | null>(null);
   const [aiBaseSignature, setAiBaseSignature] = useState<string | null>(null);
   const [isSummarizing, setIsSummarizing]   = useState(false);
+  const [showSummaryModal, setShowSummaryModal] = useState(false);
 
   // 인증 체크
   useEffect(() => {
@@ -303,6 +304,7 @@ export default function DashboardPage() {
   if (loading || !user) return null;
 
   return (
+    <>
     <div className={styles.dashboardContainer}>
       <div className={styles.quadrantGrid}>
 
@@ -374,6 +376,14 @@ export default function DashboardPage() {
                       : isAiGenerated && aiUpdatedAt && (
                           <span className={styles.statusSynced}>🟢 AI 요약 반영됨 | {formatSyncTime(new Date(aiUpdatedAt))}</span>
                         )}
+                    {items.current.length > 0 && (
+                      <button
+                        className={styles.viewAllBtn}
+                        onClick={() => setShowSummaryModal(true)}
+                      >
+                        🔍 전체보기
+                      </button>
+                    )}
                     <button
                       className={styles.summarizeBtn}
                       onClick={handleAISummarize}
@@ -415,5 +425,38 @@ export default function DashboardPage() {
 
       </div>
     </div>
+
+    {showSummaryModal && (
+      <div className={styles.modalOverlay} onClick={() => setShowSummaryModal(false)}>
+        <div className={styles.summaryModal} onClick={e => e.stopPropagation()}>
+          <div className={styles.summaryModalHeader}>
+            <h3>AI 자동 요약 전체보기</h3>
+            <button className={styles.summaryModalClose} onClick={() => setShowSummaryModal(false)}>✕</button>
+          </div>
+          <div className={styles.summaryModalBody}>
+            <div className={styles.summaryBox}>
+              {SUMMARY_CATEGORIES
+                .filter(cat => (displaySummary[cat.key] as string[]).length > 0)
+                .map(cat => (
+                  <div key={cat.key} className={styles.summarySection}>
+                    <h4 style={{ color: cat.color }}>{cat.label}</h4>
+                    <ul>
+                      {(displaySummary[cat.key] as string[]).map((text, i) => (
+                        <li key={i}>{text}</li>
+                      ))}
+                    </ul>
+                  </div>
+                ))}
+            </div>
+          </div>
+          <div className={styles.summaryModalMeta}>
+            {isAiGenerated && aiUpdatedAt
+              ? `AI 요약 (${displaySummary.sourceCount}건 기준) · ${formatSyncTime(new Date(aiUpdatedAt))}`
+              : `자동 분류 (${displaySummary.sourceCount}건) · AI 요약 미생성`}
+          </div>
+        </div>
+      </div>
+    )}
+    </>
   );
 }

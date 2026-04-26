@@ -267,14 +267,15 @@ async function fetchUserName(userId: string, token: string): Promise<string> {
     }
 
     const profile = data.user?.profile ?? {};
+    const stripAt = (s: string) => s.startsWith('@') ? s.slice(1) : s;
 
     // display_name → display_name_normalized → real_name → real_name_normalized → name → userId
     // trim()으로 공백만 있는 경우를 빈 문자열로 처리
-    const displayName     = (profile.display_name            ?? '').trim();
-    const displayNameNorm = (profile.display_name_normalized ?? '').trim();
-    const realName        = (profile.real_name               ?? data.user?.real_name ?? '').trim();
-    const realNameNorm    = (profile.real_name_normalized    ?? '').trim();
-    const fallbackName    = (data.user?.name                 ?? '').trim();
+    const displayName     = stripAt((profile.display_name            ?? '').trim());
+    const displayNameNorm = stripAt((profile.display_name_normalized ?? '').trim());
+    const realName        = stripAt((profile.real_name               ?? data.user?.real_name ?? '').trim());
+    const realNameNorm    = stripAt((profile.real_name_normalized    ?? '').trim());
+    const fallbackName    = stripAt((data.user?.name                 ?? '').trim());
 
     const name = displayName || displayNameNorm || realName || realNameNorm || fallbackName || userId;
 
