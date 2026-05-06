@@ -281,19 +281,6 @@ export default function DashboardPage() {
     init();
   }, [user]);
 
-  // 5초 자동 폴링
-  useEffect(() => {
-    if (!user) return;
-    const poll = async () => {
-      try {
-        const data = await fetch('/api/slack/events').then(r => r.json());
-        setItems(data);
-      } catch { /* 무시 */ }
-    };
-    const interval = setInterval(poll, 5_000);
-    return () => clearInterval(interval);
-  }, [user]);
-
   const userName = user?.displayName ?? user?.email?.split('@')[0] ?? null;
 
   // AI 요약 업데이트
